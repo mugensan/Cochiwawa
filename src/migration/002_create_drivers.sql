@@ -1,0 +1,11 @@
+`CREATE TABLE IF NOT EXISTS drivers (
+    id SERIAL PRIMARY KEY,
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    phone VARCHAR(20) UNIQUE NOT NULL,
+    vehicle_model VARCHAR(50) NOT NULL,
+    vehicle_plate VARCHAR(20) UNIQUE NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);`

@@ -1,20 +1,16 @@
 {
   "compilerOptions": {
+    "target": "ES2020",
     "module": "commonjs",
-    "target": "ES2021",
-    "lib": ["ES2021", "DOM"],
-    "sourceMap": true,
-    "outDir": "./dist",
-    "baseUrl": "./",
-    "incremental": true,
-    "skipLibCheck": true,
-    "strictNullChecks": false,
-    "forceConsistentCasingInFileNames": false,
-    "resolveJsonModule": true,
-    "declaration": true,
+    "rootDir": "src",
+    "outDir": "dist",
+    "strict": true,
     "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "types": ["node"],
-    "typeRoots": ["./node_modules/@types"]
-  }
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "experimentalDecorators": true,      // ← enable decorators
+    "emitDecoratorMetadata": true,       // ← needed by Nest
+    "types": ["node", "jest"]            // ← include Jest globals
+  },
+  "include": ["src/**/*.ts"]
 }
