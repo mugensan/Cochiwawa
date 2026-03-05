@@ -1,0 +1,22 @@
+CREATE TABLE RideEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    driverName TEXT NOT NULL,
+    originCity TEXT NOT NULL,
+    destinationCity TEXT NOT NULL,
+    departureTime TEXT NOT NULL,
+    availableSeats INTEGER NOT NULL,
+    price TEXT NOT NULL
+);
+
+insertRide:
+INSERT OR REPLACE INTO RideEntity(id, driverName, originCity, destinationCity, departureTime, availableSeats, price)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
+selectAllRides:
+SELECT * FROM RideEntity;
+
+selectRideById:
+SELECT * FROM RideEntity WHERE id = ?;
+
+updateSeats:
+UPDATE RideEntity SET availableSeats = ? WHERE id = ?;
