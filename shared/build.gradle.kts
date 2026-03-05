@@ -38,8 +38,6 @@ kotlin {
         }
         androidMain.dependencies {
             implementation(libs.ktor.client.okhttp)
-            implementation(libs.firebase.auth)
-            implementation(libs.firebase.firestore)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)

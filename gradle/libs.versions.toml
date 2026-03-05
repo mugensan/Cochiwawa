@@ -16,8 +16,6 @@ hiltNavigationCompose = "1.2.0"
 navigationCompose = "2.8.4"
 kotlinxDatetime = "0.6.1"
 bignum = "0.3.10"
-firebaseBom = "33.7.0"
-googleServices = "4.4.2"
 junit = "4.13.2"
 
 [libraries]
@@ -54,10 +52,6 @@ hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-com
 
 bignum = { group = "com.ionspin.kotlin", name = "bignum", version.ref = "bignum" }
 
-firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
-firebase-auth = { group = "com.google.firebase", name = "firebase-auth-ktx" }
-firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore-ktx" }
-
 junit-lib = { group = "junit", name = "junit", version.ref = "junit" }
 kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test", version.ref = "kotlin" }
 
@@ -70,4 +64,3 @@ kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", versi
 sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
-google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }
