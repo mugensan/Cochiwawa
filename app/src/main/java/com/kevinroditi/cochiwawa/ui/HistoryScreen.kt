@@ -14,7 +14,6 @@ import kotlinx.serialization.json.Json
 
 @Composable
 fun HistoryScreen(client: GraphQLClient) {
-    val scope = rememberCoroutineScope()
     var payments by remember { mutableStateOf<List<Payment>>(emptyList()) }
     var isLoading by remember { mutableStateOf(false) }
 
@@ -71,11 +70,16 @@ fun HistoryScreen(client: GraphQLClient) {
                                 Text("Ride ID: ${payment.rideId}", style = MaterialTheme.typography.labelSmall)
                                 Text("$${payment.amount}", style = MaterialTheme.typography.titleLarge)
                             }
-                            Badge(
-                                containerColor = if (payment.status == "SUCCESS") 
+                            Surface(
+                                shape = MaterialTheme.shapes.small,
+                                color = if (payment.status == "SUCCESS") 
                                     MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.errorContainer
                             ) {
-                                Text(payment.status)
+                                Text(
+                                    text = payment.status,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                    style = MaterialTheme.typography.labelMedium
+                                )
                             }
                         }
                     }

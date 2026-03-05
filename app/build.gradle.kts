@@ -3,16 +3,16 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.hilt)
-    alias(libs.plugins.google.services)
     id("kotlin-kapt")
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
-    namespace = "com.kevinroditi.cochiwawa"
+    namespace = "com.cochiwawa.app"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.kevinroditi.cochiwawa"
+        applicationId = "com.cochiwawa.app"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
@@ -57,9 +57,8 @@ dependencies {
     kapt(libs.hilt.compiler)
     implementation(libs.hilt.navigation.compose)
 
-    implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.auth)
-    implementation(libs.firebase.firestore)
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.ktor.client.cio)
 
     testImplementation(libs.junit.lib)
 }
