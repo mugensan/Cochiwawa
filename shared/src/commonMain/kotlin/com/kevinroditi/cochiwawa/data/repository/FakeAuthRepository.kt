@@ -12,13 +12,13 @@ class FakeAuthRepository : AuthRepository {
     override val currentUser: StateFlow<User?> = _currentUser.asStateFlow()
 
     override suspend fun signIn(email: String, password: String): Result<User> {
-        val user = User("123", "Test User", UserRole.PASSENGER)
+        val user = User("fake_id", "John Doe", UserRole.PASSENGER)
         _currentUser.value = user
         return Result.success(user)
     }
 
     override suspend fun signUp(email: String, name: String, password: String): Result<User> {
-        val user = User("123", name, UserRole.PASSENGER)
+        val user = User("fake_id", name, UserRole.PASSENGER)
         _currentUser.value = user
         return Result.success(user)
     }
@@ -28,8 +28,7 @@ class FakeAuthRepository : AuthRepository {
     }
 
     override suspend fun updateRole(role: UserRole): Result<Unit> {
-        val user = _currentUser.value ?: return Result.failure(Exception("No user logged in"))
-        _currentUser.value = user.copy(role = role)
+        _currentUser.value = _currentUser.value?.copy(role = role)
         return Result.success(Unit)
     }
 }

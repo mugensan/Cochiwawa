@@ -1,18 +1,16 @@
 package com.kevinroditi.cochiwawa.domain.repository
 
 import com.kevinroditi.cochiwawa.domain.model.Booking
-import com.kevinroditi.cochiwawa.domain.model.BookingStatus
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
 
 interface BookingRepository {
-    suspend fun createBooking(
+    suspend fun bookRide(
         rideId: String,
         passengerId: String,
         totalPaid: BigDecimal,
-        commission: BigDecimal,
-        payout: BigDecimal
+        commissionAmount: BigDecimal,
+        driverPayout: BigDecimal
     ): Result<Booking>
     
-    suspend fun getBookingsByPassenger(passengerId: String): List<Booking>
-    suspend fun updateBookingStatus(id: String, status: BookingStatus): Result<Unit>
+    suspend fun getBookingsForUser(userId: String): List<Booking>
 }

@@ -3,88 +3,80 @@ package com.kevinroditi.cochiwawa
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.runtime.Composable
-import androidx.navigation.NavType
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
-import com.kevinroditi.cochiwawa.domain.usecase.BookSeatUseCase
-import com.kevinroditi.cochiwawa.domain.usecase.GetRideByIdUseCase
-import com.kevinroditi.cochiwawa.domain.usecase.SearchRidesUseCase
-import com.kevinroditi.cochiwawa.ui.confirmation.BookingConfirmationScreen
-import com.kevinroditi.cochiwawa.ui.details.RideDetailsScreen
-import com.kevinroditi.cochiwawa.ui.search.SearchScreen
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import com.cochiwawa.shared.GraphQLClient
+import com.kevinroditi.cochiwawa.ui.*
 import com.kevinroditi.cochiwawa.ui.theme.CochiwawaTheme
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-
-    @Inject
-    lateinit var searchRidesUseCase: SearchRidesUseCase
-
-    @Inject
-    lateinit var getRideByIdUseCase: GetRideByIdUseCase
-
-    @Inject
-    lateinit var bookSeatUseCase: BookSeatUseCase
+    private val client = GraphQLClient()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContent {
             CochiwawaTheme {
-                CochiwawaNavHost(
-                    searchRidesUseCase = searchRidesUseCase,
-                    getRideByIdUseCase = getRideByIdUseCase,
-                    bookSeatUseCase = bookSeatUseCase
-                )
+                MainScreen(client)
             }
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CochiwawaNavHost(
-    searchRidesUseCase: SearchRidesUseCase,
-    getRideByIdUseCase: GetRideByIdUseCase,
-    bookSeatUseCase: BookSeatUseCase
-) {
-    val navController = rememberNavController()
+fun MainScreen(client: GraphQLClient) {
+    var currentScreen by remember { mutableStateOf("Passengers") }
 
-    NavHost(navController = navController, startDestination = "search") {
-        composable("search") {
-            SearchScreen(
-                searchRidesUseCase = searchRidesUseCase,
-                onRideClick = { rideId ->
-                    navController.navigate("details/$rideId")
-                }
-            )
+    Scaffold(
+        topBar = {
+            TopAppBar(title = { Text("Cochiwawa Phase 1") })
+        },
+        bottomBar = {
+            NavigationBar {
+                NavigationBarItem(
+                    selected = currentScreen == "Passengers",
+                    onClick = { currentScreen = "Passengers" },
+                    icon = { Icon(Icons.Default.Person, contentDescription = null) },
+                    label = { Text("Passengers") }
+                )
+                NavigationBarItem(
+                    selected = currentScreen == "Drivers",
+                    onClick = { currentScreen = "Drivers" },
+                    icon = { Icon(Icons.Default.Star, contentDescription = null) },
+                    label = { Text("Drivers") }
+                )
+                NavigationBarItem(
+                    selected = currentScreen == "Rides",
+                    onClick = { currentScreen = "Rides" },
+                    icon = { Icon(Icons.Default.Place, contentDescription = null) },
+                    label = { Text("Rides") }
+                )
+                NavigationBarItem(
+                    selected = currentScreen == "Payments",
+                    onClick = { currentScreen = "Payments" },
+                    icon = { Icon(Icons.Default.ShoppingCart, contentDescription = null) },
+                    label = { Text("Payments") }
+                )
+            }
         }
-        composable(
-            route = "details/{rideId}",
-            arguments = listOf(navArgument("rideId") { type = NavType.StringType })
-        ) { backStackEntry ->
-            val rideId = backStackEntry.arguments?.getString("rideId") ?: return@composable
-            RideDetailsScreen(
-                rideId = rideId,
-                getRideByIdUseCase = getRideByIdUseCase,
-                bookSeatUseCase = bookSeatUseCase,
-                onBack = { navController.popBackStack() },
-                onBookingConfirmed = {
-                    navController.navigate("confirmation")
-                }
-            )
-        }
-        composable("confirmation") {
-            BookingConfirmationScreen(
-                onFinish = {
-                    navController.popBackStack("search", inclusive = false)
-                }
-            )
+    ) { padding ->
+        Box(modifier = Modifier.padding(padding)) {
+            when (currentScreen) {
+                "Passengers" -> PassengerScreen(client)
+                "Drivers" -> DriverScreen(client)
+                "Rides" -> RideScreen(client)
+                "Payments" -> PaymentScreen(client)
+            }
         }
     }
 }
