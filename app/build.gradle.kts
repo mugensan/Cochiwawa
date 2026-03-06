@@ -68,11 +68,12 @@ dependencies {
     implementation(libs.okhttp.core)
     implementation(libs.okhttp.logging)
 
-    implementation(libs.kotlinx.serialization.json)
-    implementation(libs.ktor.client.cio)
-
+    implementation(libs.maps.compose)
     implementation("com.google.android.gms:play-services-maps:18.2.0")
     implementation("com.google.android.gms:play-services-location:21.1.0")
+
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.ktor.client.cio)
 
     testImplementation(libs.junit.lib)
 }

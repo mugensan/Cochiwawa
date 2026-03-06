@@ -41,6 +41,50 @@ export const resolvers = {
         totalEarnings: parseFloat(earnings.total_earnings || "0"),
         totalRides: parseInt(earnings.total_rides || "0")
       };
+    },
+    searchAvailableRides: async (parent: any, { origin, destination, seats }: any) => {
+      const result = await pool.query(
+        `SELECT r.*, u.full_name, u.profile_photo_url, u.average_rating
+         FROM rides r
+         JOIN users u ON r.driver_id = u.id
+         WHERE r.origin ILIKE $1 AND r.destination ILIKE $2 AND r.available_seats >= $3`,
+        [`%${origin}%`, `%${destination}%`, seats]
+      );
+      return result.rows.map(r => ({
+        ...r,
+        driverId: r.driver_id,
+        departureTime: r.departure_time.toISOString(),
+        availableSeats: r.available_seats,
+        pricePerSeat: r.price_per_seat,
+        driver: {
+            fullName: r.full_name,
+            profilePhotoUrl: r.profile_photo_url,
+            averageRating: r.average_rating
+        }
+      }));
+    },
+    getRideDetails: async (parent: any, { rideId }: any) => {
+      const result = await pool.query(
+        `SELECT r.*, u.full_name, u.profile_photo_url, u.average_rating
+         FROM rides r
+         JOIN users u ON r.driver_id = u.id
+         WHERE r.id = $1`,
+        [rideId]
+      );
+      if (result.rows.length === 0) return null;
+      const r = result.rows[0];
+      return {
+        ...r,
+        driverId: r.driver_id,
+        departureTime: r.departure_time.toISOString(),
+        availableSeats: r.available_seats,
+        pricePerSeat: r.price_per_seat,
+        driver: {
+            fullName: r.full_name,
+            profilePhotoUrl: r.profile_photo_url,
+            averageRating: r.average_rating
+        }
+      };
     }
   },
   Mutation: {
@@ -74,7 +118,7 @@ export const resolvers = {
             carPhotoBack, carPhotoLeft, carPhotoDriverSeat
           ]
         );
-        broadcast({ type: "VEHICLE_APPROVED", driverId }); // Simplified broadcast
+        broadcast({ type: "VEHICLE_APPROVED", driverId });
         return true;
       } catch (e) {
         console.error(e);
@@ -82,7 +126,6 @@ export const resolvers = {
       }
     },
     triggerEmergencyAlert: async (parent: any, { userId, lat, lng }: any) => {
-        console.log(`EMERGENCY ALERT from user ${userId} at ${lat}, ${lng}`);
         broadcast({ type: "EMERGENCY_ALERT", userId, lat, lng });
         return true;
     },
@@ -91,6 +134,26 @@ export const resolvers = {
         const booking = await createBooking(context.user.userId, rideId, seats);
         broadcast({ type: "RIDE_UPDATED", rideId });
         return booking;
+    },
+    updateDriverLocation: async (parent: any, { driverId, latitude, longitude }: any) => {
+        broadcast({ type: "DRIVER_LOCATION_UPDATED", driverId, latitude, longitude });
+        return true;
+    },
+    submitRating: async (parent: any, { rideId, rating, comment }: any) => {
+        // Logic to update average rating in users table
+        await pool.query(
+            "INSERT INTO ratings (ride_id, rating, comment) VALUES ($1, $2, $3)",
+            [rideId, rating, comment]
+        );
+        return true;
+    },
+    startRide: async (parent: any, { rideId }: any) => {
+        broadcast({ type: "RIDE_STARTED", rideId });
+        return true;
+    },
+    completeRide: async (parent: any, { rideId }: any) => {
+        broadcast({ type: "RIDE_COMPLETED", rideId });
+        return true;
     }
   },
 };

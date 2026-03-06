@@ -4,11 +4,15 @@ import com.cochiwawa.shared.Booking
 import com.kevinroditi.cochiwawa.data.remote.AuthApi
 import com.kevinroditi.cochiwawa.data.remote.graphql.GraphQLRequest
 import com.kevinroditi.cochiwawa.domain.repository.BookingRepository
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import javax.inject.Inject
 
 class BookingRepositoryImpl @Inject constructor(
-    private val api: AuthApi // Reusing AuthApi for general GraphQL for now or create a dedicated one
+    private val api: AuthApi
 ) : BookingRepository {
+
+    private val gson = Gson()
 
     override suspend fun bookRide(rideId: Int, seats: Int): Result<Booking> {
         val query = """
@@ -21,14 +25,13 @@ class BookingRepositoryImpl @Inject constructor(
         """.trimIndent()
 
         return try {
-            val response = api.login(GraphQLRequest(query)) // Assuming a generic method or adding one
+            val response = api.execute(GraphQLRequest(query))
             if (response.errors != null) {
                 Result.failure(Exception(response.errors.first().message))
             } else {
-                // This is a bit hacky because I used LoginData in AuthApi. 
-                // In a real app, I'd use a generic GraphQL client or specific DTOs.
-                // For now, let's assume we add a generic execute method to AuthApi or a new Api.
-                Result.failure(Exception("Not implemented generic executor yet"))
+                val jsonObject = response.data?.getAsJsonObject("bookRide")
+                val booking: Booking = gson.fromJson(jsonObject, Booking::class.java)
+                Result.success(booking)
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -46,8 +49,15 @@ class BookingRepositoryImpl @Inject constructor(
         """.trimIndent()
 
         return try {
-            // Placeholder until generic API is ready
-            Result.success(emptyList())
+            val response = api.execute(GraphQLRequest(query))
+            if (response.errors != null) {
+                Result.failure(Exception(response.errors.first().message))
+            } else {
+                val jsonArray = response.data?.getAsJsonArray("getPassengerBookings")
+                val type = object : TypeToken<List<Booking>>() {}.type
+                val bookings: List<Booking> = gson.fromJson(jsonArray, type)
+                Result.success(bookings)
+            }
         } catch (e: Exception) {
             Result.failure(e)
         }
