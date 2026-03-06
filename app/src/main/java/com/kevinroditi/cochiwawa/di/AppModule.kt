@@ -2,13 +2,16 @@ package com.kevinroditi.cochiwawa.di
 
 import android.content.Context
 import com.kevinroditi.cochiwawa.data.remote.AuthApi
+import com.kevinroditi.cochiwawa.data.remote.ChatApi
 import com.kevinroditi.cochiwawa.data.remote.VehicleApi
 import com.kevinroditi.cochiwawa.data.repository.AuthRepositoryImpl
 import com.kevinroditi.cochiwawa.data.repository.BookingRepositoryImpl
+import com.kevinroditi.cochiwawa.data.repository.ChatRepositoryImpl
 import com.kevinroditi.cochiwawa.data.repository.RideRepositoryImpl
 import com.kevinroditi.cochiwawa.data.repository.VehicleRepositoryImpl
 import com.kevinroditi.cochiwawa.domain.repository.AuthRepository
 import com.kevinroditi.cochiwawa.domain.repository.BookingRepository
+import com.kevinroditi.cochiwawa.domain.repository.ChatRepository
 import com.kevinroditi.cochiwawa.domain.repository.RideRepository
 import com.kevinroditi.cochiwawa.domain.repository.VehicleRepository
 import com.google.android.gms.location.LocationServices
@@ -41,6 +44,18 @@ object AppModule {
     @Singleton
     fun provideVehicleRepository(api: VehicleApi): VehicleRepository {
         return VehicleRepositoryImpl(api)
+    }
+
+    @Provides
+    @Singleton
+    fun provideChatRepository(api: ChatApi): ChatRepository {
+        return ChatRepositoryImpl(api)
+    }
+
+    @Provides
+    @Singleton
+    fun provideChatApi(retrofit: Retrofit): ChatApi {
+        return retrofit.create(ChatApi::class.java)
     }
 
     @Provides

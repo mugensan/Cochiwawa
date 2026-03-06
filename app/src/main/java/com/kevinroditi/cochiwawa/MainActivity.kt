@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Place
@@ -26,6 +27,9 @@ import com.kevinroditi.cochiwawa.data.socket.WebSocketManager
 import com.kevinroditi.cochiwawa.presentation.auth.AuthViewModel
 import com.kevinroditi.cochiwawa.presentation.auth.SignInScreen
 import com.kevinroditi.cochiwawa.presentation.auth.SignUpScreen
+import com.kevinroditi.cochiwawa.presentation.chat.ChatScreen
+import com.kevinroditi.cochiwawa.presentation.chat.ChatViewModel
+import com.kevinroditi.cochiwawa.presentation.chat.TripChatsScreen
 import com.kevinroditi.cochiwawa.presentation.corridors.CorridorDetailScreen
 import com.kevinroditi.cochiwawa.presentation.corridors.CorridorListScreen
 import com.kevinroditi.cochiwawa.presentation.corridors.CreateCorridorRideScreen
@@ -58,7 +62,10 @@ class MainActivity : ComponentActivity() {
             CochiwawaTheme {
                 val navController = rememberNavController()
                 val authViewModel: AuthViewModel = hiltViewModel()
+                val chatViewModel: ChatViewModel = hiltViewModel()
+                
                 val uiState by authViewModel.uiState.collectAsState()
+                val chatUiState by chatViewModel.uiState.collectAsState()
 
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
@@ -79,6 +86,19 @@ class MainActivity : ComponentActivity() {
                                     icon = { Icon(Icons.Default.Home, contentDescription = null) },
                                     label = { Text("Corridors") }
                                 )
+                                // Conditionally show Chat tab
+                                if (chatUiState.hasConfirmedBookings) {
+                                    NavigationBarItem(
+                                        selected = currentRoute == "tripChats" || currentRoute?.startsWith("chat/") == true,
+                                        onClick = { navController.navigate("tripChats") },
+                                        icon = { 
+                                            BadgedBox(badge = { }) {
+                                                Icon(Icons.Default.Email, contentDescription = "Chat")
+                                            }
+                                        },
+                                        label = { Text("Chat") }
+                                    )
+                                }
                                 NavigationBarItem(
                                     selected = currentRoute == "dashboard",
                                     onClick = { navController.navigate("dashboard") },
@@ -156,6 +176,26 @@ class MainActivity : ComponentActivity() {
                                 onRideSelected = { rideId ->
                                     navController.navigate("rideMap/$rideId")
                                 }
+                            )
+                        }
+                        composable("tripChats") {
+                            TripChatsScreen(
+                                viewModel = chatViewModel,
+                                onChatRoomClick = { chatRoomId ->
+                                    navController.navigate("chat/$chatRoomId")
+                                }
+                            )
+                        }
+                        composable(
+                            route = "chat/{chatRoomId}",
+                            arguments = listOf(navArgument("chatRoomId") { type = NavType.StringType })
+                        ) { backStackEntry ->
+                            val chatRoomId = backStackEntry.arguments?.getString("chatRoomId") ?: ""
+                            ChatScreen(
+                                chatRoomId = chatRoomId,
+                                currentUserId = uiState.token ?: "unknown",
+                                viewModel = chatViewModel,
+                                onBackClick = { navController.popBackStack() }
                             )
                         }
                         composable("dashboard") {
