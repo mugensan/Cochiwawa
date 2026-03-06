@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
+import * as bcryptModule from "bcryptjs";
 import { pool } from "../config/database";
 
 const JWT_SECRET = process.env.JWT_SECRET || "cochiwawa_secret";

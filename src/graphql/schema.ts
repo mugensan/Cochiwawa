@@ -42,6 +42,8 @@ export const typeDefs = gql`
 
   type Query {
     me: User
+    searchAvailableRides(origin: String!, destination: String!, seats: Int!): [Ride]!
+    getRideDetails(rideId: String!): Ride
     getDriverRides(driverId: String!): [Ride]!
     getPassengerBookings(passengerId: String!): [Booking]!
     getDriverEarnings(driverId: String!): Earnings!
@@ -76,5 +78,13 @@ export const typeDefs = gql`
     triggerEmergencyAlert(userId: String!, lat: Float!, lng: Float!): Boolean!
 
     bookRide(rideId: Int!, seats: Int!): Booking!
+
+    updateDriverLocation(driverId: String!, latitude: Float!, longitude: Float!): Boolean!
+
+    submitRating(rideId: String!, rating: Int!, comment: String!): Boolean!
+
+    startRide(rideId: String!): Boolean!
+
+    completeRide(rideId: String!): Boolean!
   }
 `;

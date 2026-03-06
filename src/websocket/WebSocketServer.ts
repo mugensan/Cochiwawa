@@ -1,4 +1,4 @@
-import { WebSocketServer, WebSocket } from "ws";
+import WebSocket, { Server as WebSocketServer } from "ws";
 import { Server } from "http";
 
 export let wss: WebSocketServer;
@@ -22,7 +22,7 @@ export function initWebSocket(server: Server) {
 
 export function broadcast(data: any) {
     if (!wss) return;
-    wss.clients.forEach(client => {
+    wss.clients.forEach((client: WebSocket) => {
         if (client.readyState === WebSocket.OPEN) {
             client.send(JSON.stringify(data));
         }
