@@ -1,6 +1,8 @@
 package com.kevinroditi.cochiwawa.di
 
-import com.kevinroditi.cochiwawa.data.repository.FakeAuthRepository
+import com.cochiwawa.shared.GraphQLClient
+import com.kevinroditi.cochiwawa.data.local.AuthPreferences
+import com.kevinroditi.cochiwawa.data.repository.AuthRepositoryImpl
 import com.kevinroditi.cochiwawa.domain.repository.AuthRepository
 import dagger.Module
 import dagger.Provides
@@ -14,7 +16,10 @@ object AuthModule {
 
     @Provides
     @Singleton
-    fun provideAuthRepository(): AuthRepository {
-        return FakeAuthRepository()
+    fun provideAuthRepository(
+        client: GraphQLClient,
+        authPreferences: AuthPreferences
+    ): AuthRepository {
+        return AuthRepositoryImpl(client, authPreferences)
     }
 }

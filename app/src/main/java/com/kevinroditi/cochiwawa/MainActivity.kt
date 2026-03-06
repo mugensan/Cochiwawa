@@ -3,79 +3,144 @@ package com.kevinroditi.cochiwawa
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Place
-import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import com.cochiwawa.shared.GraphQLClient
-import com.kevinroditi.cochiwawa.ui.*
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
+import com.kevinroditi.cochiwawa.presentation.auth.AuthViewModel
+import com.kevinroditi.cochiwawa.presentation.auth.SignInScreen
+import com.kevinroditi.cochiwawa.presentation.auth.SignUpScreen
+import com.kevinroditi.cochiwawa.presentation.driver.DriverDashboardScreen
+import com.kevinroditi.cochiwawa.presentation.driver.RegisterVehicleScreen
+import com.kevinroditi.cochiwawa.presentation.history.PassengerHistoryScreen
+import com.kevinroditi.cochiwawa.presentation.rides.CreateRideScreen
+import com.kevinroditi.cochiwawa.presentation.safety.EmergencyButton
 import com.kevinroditi.cochiwawa.ui.theme.CochiwawaTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    private val client = GraphQLClient()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             CochiwawaTheme {
-                MainScreen(client)
-            }
-        }
-    }
-}
+                val navController = rememberNavController()
+                val authViewModel: AuthViewModel = hiltViewModel()
+                val uiState by authViewModel.uiState.collectAsState()
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun MainScreen(client: GraphQLClient) {
-    var currentScreen by remember { mutableStateOf("Passengers") }
+                val navBackStackEntry by navController.currentBackStackEntryAsState()
+                val currentRoute = navBackStackEntry?.destination?.route
 
-    Scaffold(
-        topBar = {
-            TopAppBar(title = { Text("Cochiwawa Phase 1") })
-        },
-        bottomBar = {
-            NavigationBar {
-                NavigationBarItem(
-                    selected = currentScreen == "Passengers",
-                    onClick = { currentScreen = "Passengers" },
-                    icon = { Icon(Icons.Default.Person, contentDescription = null) },
-                    label = { Text("Passengers") }
-                )
-                NavigationBarItem(
-                    selected = currentScreen == "Drivers",
-                    onClick = { currentScreen = "Drivers" },
-                    icon = { Icon(Icons.Default.Star, contentDescription = null) },
-                    label = { Text("Drivers") }
-                )
-                NavigationBarItem(
-                    selected = currentScreen == "Rides",
-                    onClick = { currentScreen = "Rides" },
-                    icon = { Icon(Icons.Default.Place, contentDescription = null) },
-                    label = { Text("Rides") }
-                )
-                NavigationBarItem(
-                    selected = currentScreen == "Payments",
-                    onClick = { currentScreen = "Payments" },
-                    icon = { Icon(Icons.Default.ShoppingCart, contentDescription = null) },
-                    label = { Text("Payments") }
-                )
-            }
-        }
-    ) { padding ->
-        Box(modifier = Modifier.padding(padding)) {
-            when (currentScreen) {
-                "Passengers" -> PassengerScreen(client)
-                "Drivers" -> DriverScreen(client)
-                "Rides" -> RideScreen(client)
-                "Payments" -> PaymentScreen(client)
+                Scaffold(
+                    bottomBar = {
+                        if (uiState.isAuthenticated && currentRoute != "signIn" && currentRoute != "signUp") {
+                            NavigationBar {
+                                NavigationBarItem(
+                                    selected = currentRoute == "marketplace",
+                                    onClick = { navController.navigate("marketplace") },
+                                    icon = { Icon(Icons.Default.Place, contentDescription = null) },
+                                    label = { Text("Market") }
+                                )
+                                NavigationBarItem(
+                                    selected = currentRoute == "dashboard",
+                                    onClick = { navController.navigate("dashboard") },
+                                    icon = { Icon(Icons.Default.Star, contentDescription = null) },
+                                    label = { Text("Driver") }
+                                )
+                                NavigationBarItem(
+                                    selected = currentRoute == "history",
+                                    onClick = { navController.navigate("history") },
+                                    icon = { Icon(Icons.AutoMirrored.Filled.List, contentDescription = null) },
+                                    label = { Text("History") }
+                                )
+                                NavigationBarItem(
+                                    selected = currentRoute == "profile",
+                                    onClick = { navController.navigate("profile") },
+                                    icon = { Icon(Icons.Default.Person, contentDescription = null) },
+                                    label = { Text("Profile") }
+                                )
+                            }
+                        }
+                    },
+                    floatingActionButton = {
+                        if (uiState.isAuthenticated) {
+                            EmergencyButton()
+                        }
+                    }
+                ) { padding ->
+                    NavHost(
+                        navController = navController,
+                        startDestination = if (uiState.isAuthenticated) "marketplace" else "signIn",
+                        modifier = Modifier.padding(padding)
+                    ) {
+                        composable("signIn") {
+                            SignInScreen(
+                                viewModel = authViewModel,
+                                onNavigateToSignUp = { navController.navigate("signUp") }
+                            )
+                        }
+                        composable("signUp") {
+                            SignUpScreen(
+                                viewModel = authViewModel,
+                                onNavigateToSignIn = { navController.navigate("signIn") },
+                                onNavigateToVehicleRegistration = { navController.navigate("registerVehicle") }
+                            )
+                        }
+                        composable("registerVehicle") {
+                            RegisterVehicleScreen(
+                                onRegistrationSuccess = { navController.navigate("dashboard") }
+                            )
+                        }
+                        composable("marketplace") {
+                            // Marketplace screen would list available rides
+                            Text("Ride Marketplace")
+                        }
+                        composable("dashboard") {
+                            DriverDashboardScreen()
+                        }
+                        composable("createRide") {
+                            CreateRideScreen { origin, dest, seats, price, gender ->
+                                // Logic to call CreateRide mutation
+                                navController.navigate("dashboard")
+                            }
+                        }
+                        composable("history") {
+                            PassengerHistoryScreen()
+                        }
+                        composable("profile") {
+                            Button(onClick = { authViewModel.logout() }) {
+                                Text("Logout")
+                            }
+                        }
+                    }
+                }
+
+                LaunchedEffect(uiState.isAuthenticated) {
+                    if (uiState.isAuthenticated) {
+                        if (currentRoute == "signIn" || currentRoute == "signUp") {
+                            navController.navigate("marketplace") {
+                                popUpTo("signIn") { inclusive = true }
+                            }
+                        }
+                    } else {
+                        if (currentRoute != "signIn" && currentRoute != "signUp") {
+                            navController.navigate("signIn") {
+                                popUpTo(0)
+                            }
+                        }
+                    }
+                }
             }
         }
     }
