@@ -11,6 +11,7 @@ export const typeDefs = gql`
     profilePhotoUrl: String
     averageRating: Float
     totalRides: Int
+    subscription: Subscription
   }
 
   type AuthResponse {
@@ -28,6 +29,18 @@ export const typeDefs = gql`
     pricePerSeat: Float!
     driver: User
     distance: Float
+    corridorId: String
+  }
+
+  type Corridor {
+    id: ID!
+    name: String!
+    origin: String!
+    destination: String!
+    activeRides: Int
+    nextDeparture: String
+    seatsLeft: Int
+    pricePerSeat: Float
   }
 
   type Booking {
@@ -37,6 +50,13 @@ export const typeDefs = gql`
     seats: Int!
     createdAt: String!
     ride: Ride
+  }
+
+  type Subscription {
+    id: ID!
+    userId: String!
+    planType: String!
+    validUntil: String!
   }
 
   type Earnings {
@@ -49,8 +69,10 @@ export const typeDefs = gql`
     getDriverRides(driverId: String!): [Ride]!
     getPassengerBookings(passengerId: String!): [Booking]!
     getDriverEarnings(driverId: String!): Earnings!
-    searchAvailableRides(origin: String!, destination: String!, seats: Int!): [Ride]!
+    searchAvailableRides(origin: String!, destination: String!, seats: Int!, windowMinutes: Int): [Ride]!
     getRideDetails(rideId: ID!): Ride
+    getCorridors: [Corridor]!
+    getSubscriptions: [Subscription]
   }
 
   type Mutation {
@@ -89,5 +111,19 @@ export const typeDefs = gql`
 
     startRide(rideId: ID!): Boolean!
     completeRide(rideId: ID!): Boolean!
+
+    createCorridorRide(corridorId: String!, departureTime: String!, seats: Int!, price: Float!): Boolean!
+
+    createRecurringRide(
+        corridorId: String,
+        origin: String,
+        destination: String,
+        departureTime: String!,
+        daysOfWeek: [String]!,
+        seats: Int!,
+        pricePerSeat: Float!
+    ): Boolean!
+
+    subscribe(planType: String!): Boolean!
   }
 `;
