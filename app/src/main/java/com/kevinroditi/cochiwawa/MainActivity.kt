@@ -13,26 +13,40 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import com.kevinroditi.cochiwawa.data.socket.WebSocketManager
 import com.kevinroditi.cochiwawa.presentation.auth.AuthViewModel
 import com.kevinroditi.cochiwawa.presentation.auth.SignInScreen
 import com.kevinroditi.cochiwawa.presentation.auth.SignUpScreen
 import com.kevinroditi.cochiwawa.presentation.driver.DriverDashboardScreen
 import com.kevinroditi.cochiwawa.presentation.driver.RegisterVehicleScreen
 import com.kevinroditi.cochiwawa.presentation.history.PassengerHistoryScreen
+import com.kevinroditi.cochiwawa.presentation.map.RideMapScreen
+import com.kevinroditi.cochiwawa.presentation.rating.RatingScreen
 import com.kevinroditi.cochiwawa.presentation.rides.CreateRideScreen
+import com.kevinroditi.cochiwawa.presentation.rides.SearchRideScreen
 import com.kevinroditi.cochiwawa.presentation.safety.EmergencyButton
 import com.kevinroditi.cochiwawa.ui.theme.CochiwawaTheme
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
+    @Inject
+    lateinit var webSocketManager: WebSocketManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Connect to WebSocket on startup
+        webSocketManager.connect()
+
         setContent {
             CochiwawaTheme {
                 val navController = rememberNavController()
@@ -103,8 +117,11 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         composable("marketplace") {
-                            // Marketplace screen would list available rides
-                            Text("Ride Marketplace")
+                            SearchRideScreen(
+                                onRideSelected = { rideId ->
+                                    navController.navigate("rideMap/$rideId")
+                                }
+                            )
                         }
                         composable("dashboard") {
                             DriverDashboardScreen()
@@ -114,6 +131,34 @@ class MainActivity : ComponentActivity() {
                                 // Logic to call CreateRide mutation
                                 navController.navigate("dashboard")
                             }
+                        }
+                        composable(
+                            route = "rideMap/{rideId}",
+                            arguments = listOf(navArgument("rideId") { type = NavType.StringType })
+                        ) { backStackEntry ->
+                            val rideId = backStackEntry.arguments?.getString("rideId") ?: ""
+                            RideMapScreen(
+                                rideId = rideId,
+                                driverId = null, // Logic to determine if user is driver
+                                isDriver = false,
+                                onRideCompleted = {
+                                    navController.navigate("rating/$rideId")
+                                }
+                            )
+                        }
+                        composable(
+                            route = "rating/{rideId}",
+                            arguments = listOf(navArgument("rideId") { type = NavType.StringType })
+                        ) { backStackEntry ->
+                            val rideId = backStackEntry.arguments?.getString("rideId") ?: ""
+                            RatingScreen(
+                                rideId = rideId,
+                                onRatingSubmitted = {
+                                    navController.navigate("marketplace") {
+                                        popUpTo("marketplace") { inclusive = true }
+                                    }
+                                }
+                            )
                         }
                         composable("history") {
                             PassengerHistoryScreen()
@@ -143,5 +188,10 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        webSocketManager.disconnect()
     }
 }

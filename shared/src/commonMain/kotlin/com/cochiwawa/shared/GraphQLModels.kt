@@ -16,7 +16,9 @@ data class UserRemote(
     val fullName: String? = null,
     val gender: String? = null,
     val nationalId: String? = null,
-    val profilePhotoUrl: String? = null
+    val profilePhotoUrl: String? = null,
+    val averageRating: Double? = null,
+    val totalRides: Int? = null
 )
 
 @Serializable
@@ -48,35 +50,15 @@ data class Earnings(
 )
 
 @Serializable
-data class Passenger(
-    val id: Int,
-    val name: String,
-    val email: String
-)
-
-@Serializable
-data class Driver(
-    val id: Int,
-    val name: String,
-    val vehicleInfo: String
-)
-
-@Serializable
 data class Ride(
     val id: Int,
+    val driverId: String? = null,
     val origin: String,
     val destination: String,
     val departureTime: String,
     val availableSeats: Int,
-    val pricePerSeat: Double
-)
-
-@Serializable
-data class Payment(
-    val id: Int,
-    val amount: Double,
-    val fee: Double,
-    val status: String
+    val pricePerSeat: Double,
+    val driver: UserRemote? = null
 )
 
 @Serializable
