@@ -9,9 +9,12 @@ export const typeDefs = gql`
     gender: String
     nationalId: String
     profilePhotoUrl: String
+<<<<<<< HEAD
     averageRating: Float
     totalRides: Int
     subscription: Subscription
+=======
+>>>>>>> c10c00f53cc713f083a8de5bc8aedbb9ec0493d8
   }
 
   type AuthResponse {
@@ -27,6 +30,7 @@ export const typeDefs = gql`
     departureTime: String!
     availableSeats: Int!
     pricePerSeat: Float!
+<<<<<<< HEAD
     driver: User
     distance: Float
     corridorId: String
@@ -41,6 +45,8 @@ export const typeDefs = gql`
     nextDeparture: String
     seatsLeft: Int
     pricePerSeat: Float
+=======
+>>>>>>> c10c00f53cc713f083a8de5bc8aedbb9ec0493d8
   }
 
   type Booking {
@@ -69,10 +75,13 @@ export const typeDefs = gql`
     getDriverRides(driverId: String!): [Ride]!
     getPassengerBookings(passengerId: String!): [Booking]!
     getDriverEarnings(driverId: String!): Earnings!
+<<<<<<< HEAD
     searchAvailableRides(origin: String!, destination: String!, seats: Int!, windowMinutes: Int): [Ride]!
     getRideDetails(rideId: ID!): Ride
     getCorridors: [Corridor]!
     getSubscriptions: [Subscription]
+=======
+>>>>>>> c10c00f53cc713f083a8de5bc8aedbb9ec0493d8
   }
 
   type Mutation {
@@ -104,6 +113,7 @@ export const typeDefs = gql`
     triggerEmergencyAlert(userId: String!, lat: Float!, lng: Float!): Boolean!
 
     bookRide(rideId: Int!, seats: Int!): Booking!
+<<<<<<< HEAD
 
     updateDriverLocation(driverId: String!, latitude: Float!, longitude: Float!): Boolean!
 
@@ -125,5 +135,7 @@ export const typeDefs = gql`
     ): Boolean!
 
     subscribe(planType: String!): Boolean!
+=======
+>>>>>>> c10c00f53cc713f083a8de5bc8aedbb9ec0493d8
   }
 `;
