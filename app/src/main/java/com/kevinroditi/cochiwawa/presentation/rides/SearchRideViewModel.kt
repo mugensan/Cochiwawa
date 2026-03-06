@@ -13,6 +13,7 @@ import javax.inject.Inject
 
 data class SearchUiState(
     val rides: List<Ride> = emptyList(),
+    val uiRides: List<Ride> = emptyList(), // Added for UI consumption
     val isLoading: Boolean = false,
     val error: String? = null
 )
@@ -30,7 +31,11 @@ class SearchRideViewModel @Inject constructor(
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
             val result = repository.searchAvailableRides(origin, destination, seats)
             result.onSuccess { rides ->
-                _uiState.value = _uiState.value.copy(rides = rides, isLoading = false)
+                _uiState.value = _uiState.value.copy(
+                    rides = rides,
+                    uiRides = rides,
+                    isLoading = false
+                )
             }.onFailure { error ->
                 _uiState.value = _uiState.value.copy(isLoading = false, error = error.message)
             }

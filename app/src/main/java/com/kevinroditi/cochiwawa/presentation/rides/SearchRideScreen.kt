@@ -7,14 +7,18 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.kevinroditi.cochiwawa.domain.model.Corridor
+import com.kevinroditi.cochiwawa.presentation.corridors.components.CorridorCard
 import com.kevinroditi.cochiwawa.presentation.rides.components.RideCard
 
 @Composable
 fun SearchRideScreen(
     viewModel: SearchRideViewModel = hiltViewModel(),
-    onRideSelected: (String) -> Unit
+    onRideSelected: (String) -> Unit,
+    onCorridorSelected: (String) -> Unit
 ) {
     var origin by remember { mutableStateOf("") }
     var destination by remember { mutableStateOf("") }
@@ -22,60 +26,90 @@ fun SearchRideScreen(
     
     val uiState by viewModel.uiState.collectAsState()
 
-    Column(
+    // Mock recommended corridors (Phase 15)
+    val recommendedCorridors = remember {
+        listOf(
+            Corridor("1", "Maipú → Providencia", "Maipú", "Providencia", 5, "07:30", 2, 2.50),
+            Corridor("2", "Puente Alto → Las Condes", "Puente Alto", "Las Condes", 3, "08:00", 1, 3.00)
+        )
+    }
+
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        Text("Find a Ride", style = MaterialTheme.typography.headlineMedium)
-        Spacer(modifier = Modifier.height(16.dp))
+        item {
+            Text("Find a Ride", style = MaterialTheme.typography.headlineMedium)
+            Spacer(modifier = Modifier.height(16.dp))
 
-        OutlinedTextField(
-            value = origin,
-            onValueChange = { origin = it },
-            label = { Text("Origin") },
-            modifier = Modifier.fillMaxWidth()
-        )
-        OutlinedTextField(
-            value = destination,
-            onValueChange = { destination = it },
-            label = { Text("Destination") },
-            modifier = Modifier.fillMaxWidth()
-        )
-        OutlinedTextField(
-            value = seats,
-            onValueChange = { seats = it },
-            label = { Text("Seats") },
-            modifier = Modifier.fillMaxWidth()
-        )
+            OutlinedTextField(
+                value = origin,
+                onValueChange = { origin = it },
+                label = { Text("Origin") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            OutlinedTextField(
+                value = destination,
+                onValueChange = { destination = it },
+                label = { Text("Destination") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            OutlinedTextField(
+                value = seats,
+                onValueChange = { seats = it },
+                label = { Text("Seats") },
+                modifier = Modifier.fillMaxWidth()
+            )
 
-        Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-        Button(
-            onClick = {
-                viewModel.searchRides(origin, destination, seats.toIntOrNull() ?: 1)
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Search")
+            Button(
+                onClick = {
+                    viewModel.searchRides(origin, destination, seats.toIntOrNull() ?: 1)
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Search")
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        if (uiState.rides.isEmpty() && !uiState.isLoading) {
+            item {
+                Text(
+                    text = "🔥 Popular routes today",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+            items(recommendedCorridors) { corridor ->
+                CorridorCard(
+                    corridor = corridor,
+                    onClick = { onCorridorSelected(corridor.id) }
+                )
+            }
+            item { Spacer(modifier = Modifier.height(24.dp)) }
+        }
 
-        if (uiState.isLoading) {
-            CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
-        } else {
-            if (uiState.error != null) {
+        item {
+            if (uiState.isLoading) {
+                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            } else if (uiState.error != null) {
                 Text(text = uiState.error!!, color = MaterialTheme.colorScheme.error)
             }
-            LazyColumn {
-                items(uiState.rides) { ride ->
-                    RideCard(
-                        ride = ride,
-                        onBookClick = { onRideSelected(ride.id.toString()) }
-                    )
-                }
-            }
+        }
+
+        items(uiState.uiRides) { ride ->
+            RideCard(
+                ride = ride,
+                requestedSeats = seats.toIntOrNull() ?: 1,
+                onBookClick = { onRideSelected(ride.id.toString()) }
+            )
         }
     }
 }
