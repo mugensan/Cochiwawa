@@ -1,7 +1,8 @@
 package com.kevinroditi.cochiwawa.di
 
+import com.cochiwawa.shared.NetworkClient
 import com.kevinroditi.cochiwawa.data.repository.FakeBookingRepository
-import com.kevinroditi.cochiwawa.data.repository.FakeRideRepository
+import com.kevinroditi.cochiwawa.data.repository.RestRideRepository
 import com.kevinroditi.cochiwawa.domain.repository.BookingRepository
 import com.kevinroditi.cochiwawa.domain.repository.RideRepository
 import com.kevinroditi.cochiwawa.domain.usecase.BookSeatUseCase
@@ -19,8 +20,14 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideRideRepository(): RideRepository {
-        return FakeRideRepository()
+    fun provideNetworkClient(): NetworkClient {
+        return NetworkClient()
+    }
+
+    @Provides
+    @Singleton
+    fun provideRideRepository(networkClient: NetworkClient): RideRepository {
+        return RestRideRepository(networkClient)
     }
 
     @Provides
