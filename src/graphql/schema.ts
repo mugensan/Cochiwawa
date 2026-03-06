@@ -1,24 +1,3 @@
-<<<<<<< HEAD
-import { GraphQLSchema, GraphQLObjectType, GraphQLField } from 'graphql';
-import safetySystemTypeDefs from './types/safetyTypes';
-import safetyResolvers from './resolvers/safetyResolvers';
-
-/**
- * GraphQL Schema for Safety and Verification System
- * Combines all safety, verification, and identity features
- */
-
-export const getGraphQLSchema = () => {
-    // Note: In production, you would use Apollo Server or similar
-    // This is a placeholder for the schema structure
-    return {
-        typeDefs: safetySystemTypeDefs,
-        resolvers: safetyResolvers
-    };
-};
-
-export { safetySystemTypeDefs, safetyResolvers };
-=======
 import { gql } from "apollo-server-express";
 
 export const typeDefs = gql`
@@ -30,8 +9,6 @@ export const typeDefs = gql`
     gender: String
     nationalId: String
     profilePhotoUrl: String
-    averageRating: Float
-    totalRides: Int
   }
 
   type AuthResponse {
@@ -47,8 +24,6 @@ export const typeDefs = gql`
     departureTime: String!
     availableSeats: Int!
     pricePerSeat: Float!
-    driver: User
-    distance: Float
   }
 
   type Booking {
@@ -70,8 +45,6 @@ export const typeDefs = gql`
     getDriverRides(driverId: String!): [Ride]!
     getPassengerBookings(passengerId: String!): [Booking]!
     getDriverEarnings(driverId: String!): Earnings!
-    searchAvailableRides(origin: String!, destination: String!, seats: Int!): [Ride]!
-    getRideDetails(rideId: ID!): Ride
   }
 
   type Mutation {
@@ -103,13 +76,5 @@ export const typeDefs = gql`
     triggerEmergencyAlert(userId: String!, lat: Float!, lng: Float!): Boolean!
 
     bookRide(rideId: Int!, seats: Int!): Booking!
-
-    updateDriverLocation(driverId: String!, latitude: Float!, longitude: Float!): Boolean!
-
-    submitRating(rideId: ID!, rating: Int!, comment: String): Boolean!
-
-    startRide(rideId: ID!): Boolean!
-    completeRide(rideId: ID!): Boolean!
   }
 `;
->>>>>>> 762969f9f233fa2b2e50784a7d843c8c40f41da8
