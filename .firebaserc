@@ -1,0 +1,15 @@
+{
+  "projects": {
+    "default": "cochiwawa2026"
+  },
+  "targets": {
+    "cochiwawa2026": {
+      "hosting": {
+        "landing": [
+          "cochiwawa2026"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

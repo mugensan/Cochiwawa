@@ -1,0 +1,2842 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cochiwawa — Viaja juntos. Llega mejor.</title>
+  <meta name="description" content="La app de carpooling chilena. Viaja seguro, ahorra plata y reduce tu huella de carbono." />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230F2419'/><text y='72' x='50' text-anchor='middle' font-size='60'>🚗</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --forest:    #1A3C2E;
+      --deep:      #0F2419;
+      --sage:      #2D6A4F;
+      --mint:      #52B788;
+      --lime:      #95D5B2;
+      --glow:      #B7E4C7;
+      --coral:     #FF6B35;
+      --cream:     #F0F4EF;
+      --white:     #FAFFF8;
+      --text-dim:  #8BAF98;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--deep);
+      color: var(--white);
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      padding: 18px 24px;
+      display: flex; align-items: center; justify-content: space-between;
+      background: linear-gradient(to bottom, rgba(15,36,25,0.95) 0%, transparent 100%);
+      backdrop-filter: blur(2px);
+    }
+    .nav-logo {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1.4rem;
+      color: var(--mint);
+      letter-spacing: -0.5px;
+    }
+    .nav-logo span { color: var(--coral); }
+    .nav-cta {
+      background: var(--coral);
+      color: white;
+      border: none;
+      padding: 9px 20px;
+      border-radius: 50px;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 500;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .nav-cta:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(255,107,53,0.4); }
+
+    /* ── HERO ── */
+    #hero {
+      min-height: 100svh;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 100px 24px 60px;
+      overflow: hidden;
+      text-align: center;
+    }
+
+    /* Animated background mesh */
+    .bg-mesh {
+      position: absolute; inset: 0; z-index: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 20%, rgba(82,183,136,0.18) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 80% at 80% 70%, rgba(45,106,79,0.22) 0%, transparent 60%),
+        radial-gradient(ellipse 100% 50% at 50% 100%, rgba(26,60,46,0.8) 0%, transparent 70%),
+        var(--deep);
+    }
+
+    /* Floating orbs */
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(60px);
+      opacity: 0.25;
+      animation: float 8s ease-in-out infinite;
+    }
+    .orb-1 { width: 300px; height: 300px; background: var(--mint); top: -80px; left: -80px; animation-delay: 0s; }
+    .orb-2 { width: 200px; height: 200px; background: var(--sage); bottom: 100px; right: -60px; animation-delay: -3s; }
+    .orb-3 { width: 150px; height: 150px; background: var(--lime); top: 40%; left: 60%; animation-delay: -5s; }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-20px) scale(1.05); }
+    }
+
+    /* Full hero SVG scene */
+    .hero-scene {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Road perspective container */
+    .road-container {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    /* Logo wrapper — road passes through it */
+    .hero-logo-wrap {
+      position: relative;
+      z-index: 3;
+      display: inline-block;
+    }
+
+    /* ── Nav pin (small, top-left in navbar) ── */
+    .nav-pin {
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+
+    /* ── Hero pin wrapper — replaces the letter "i" ── */
+    .hero-pin-wrap {
+      position: relative;
+      display: inline-block;
+      width: 0.32em;
+      vertical-align: baseline;
+    }
+
+    /* The 📍 emoji pin */
+    .pin-emoji {
+      position: absolute;
+      left: 50%;
+      bottom: -0.05em;
+      transform: translateX(-50%);
+      font-size: 1em;
+      line-height: 1;
+      filter: drop-shadow(0 0 10px rgba(255,107,53,0.8));
+      animation: pinFloat 2.5s ease-in-out infinite;
+      z-index: 5;
+      white-space: nowrap;
+    }
+    @keyframes pinFloat {
+      0%, 100% { transform: translateX(-50%) translateY(0);    filter: drop-shadow(0 0 10px rgba(255,107,53,0.75)); }
+      50%       { transform: translateX(-50%) translateY(-7px); filter: drop-shadow(0 6px 16px rgba(255,107,53,1)); }
+    }
+
+    /* Pulse rings behind the hero pin */
+    .pin-pulse {
+      position: absolute;
+      bottom: 0.1em;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 1.8em;
+      height: 1.8em;
+      border-radius: 50%;
+      background: rgba(255,107,53,0.22);
+      animation: pinPulse 2.2s ease-out infinite;
+      pointer-events: none;
+      z-index: 3;
+    }
+    @keyframes pinPulse {
+      0%   { transform: translateX(-50%) scale(0.3); opacity: 1; }
+      100% { transform: translateX(-50%) scale(3.5); opacity: 0; }
+    }
+
+    /* Pin replacing the letter "i" — old class kept for safety */
+    .logo-i-pin { position: relative; display: inline-block; width: 0.38em; vertical-align: baseline; }
+    .pin-svg { display: none; }
+
+    /* Car on road animation */
+    .car-dot {
+      animation: driveUp 3s ease-in-out infinite;
+    }
+    @keyframes driveUp {
+      0%   { transform: translateY(0); opacity: 0.9; }
+      50%  { transform: translateY(-18px); opacity: 1; }
+      100% { transform: translateY(0); opacity: 0.9; }
+    }
+
+    /* Road dash animation */
+    .road-dash {
+      animation: dashScroll 1.2s linear infinite;
+    }
+    @keyframes dashScroll {
+      0%   { transform: translateY(0); }
+      100% { transform: translateY(16px); }
+    }
+
+    /* Hero content */
+    .hero-content {
+      position: relative; z-index: 2;
+      max-width: 480px;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(82,183,136,0.15);
+      border: 1px solid rgba(82,183,136,0.3);
+      color: var(--lime);
+      padding: 6px 14px;
+      border-radius: 50px;
+      font-size: 0.78rem;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      margin-bottom: 28px;
+      animation: fadeUp 0.8s ease both;
+    }
+    .hero-badge::before { content: '🌿'; font-size: 0.9rem; }
+
+    .hero-logo {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: clamp(3rem, 14vw, 5.5rem);
+      line-height: 0.95;
+      letter-spacing: -2px;
+      color: var(--white);
+      margin-bottom: 8px;
+      animation: fadeUp 0.8s ease 0.1s both;
+    }
+    .hero-logo .dot { color: var(--mint); }
+    .hero-logo .pin {
+      display: inline-block;
+      color: var(--coral);
+      animation: bounce 2s ease-in-out infinite;
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+
+    .hero-tagline {
+      font-size: clamp(1.05rem, 4vw, 1.3rem);
+      font-weight: 300;
+      color: var(--lime);
+      letter-spacing: 0.5px;
+      margin-bottom: 14px;
+      animation: fadeUp 0.8s ease 0.2s both;
+    }
+
+    .hero-sub {
+      font-size: 0.92rem;
+      color: var(--text-dim);
+      line-height: 1.6;
+      margin-bottom: 36px;
+      animation: fadeUp 0.8s ease 0.3s both;
+    }
+
+    /* Email form */
+    .email-form {
+      display: flex;
+      gap: 0;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(82,183,136,0.25);
+      border-radius: 60px;
+      padding: 5px 5px 5px 20px;
+      margin-bottom: 16px;
+      animation: fadeUp 0.8s ease 0.4s both;
+      transition: border-color 0.3s;
+    }
+    .email-form:focus-within {
+      border-color: rgba(82,183,136,0.6);
+      box-shadow: 0 0 0 3px rgba(82,183,136,0.1);
+    }
+    .email-form input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--white);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      min-width: 0;
+    }
+    .email-form input::placeholder { color: var(--text-dim); }
+    .email-form button {
+      background: var(--coral);
+      color: white;
+      border: none;
+      padding: 12px 22px;
+      border-radius: 50px;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.88rem;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .email-form button:hover { transform: scale(1.03); box-shadow: 0 6px 24px rgba(255,107,53,0.45); }
+
+    .form-note {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      animation: fadeUp 0.8s ease 0.5s both;
+    }
+
+    /* Pills */
+    .pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      margin-top: 36px;
+      animation: fadeUp 0.8s ease 0.6s both;
+    }
+    .pill {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: var(--lime);
+      padding: 7px 14px;
+      border-radius: 50px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      backdrop-filter: blur(4px);
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .pill:hover {
+      background: rgba(82,183,136,0.15);
+      border-color: rgba(82,183,136,0.4);
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── HOW IT WORKS ── */
+    #how {
+      padding: 80px 24px;
+      background: var(--forest);
+      position: relative;
+      overflow: hidden;
+    }
+    #how::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--mint), transparent);
+    }
+
+    .section-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--mint);
+      margin-bottom: 12px;
+    }
+    .section-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: clamp(1.8rem, 7vw, 2.8rem);
+      line-height: 1.1;
+      color: var(--white);
+      margin-bottom: 48px;
+    }
+    .section-title em { color: var(--mint); font-style: normal; }
+
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      max-width: 420px;
+      margin: 0 auto;
+    }
+    .step {
+      display: flex;
+      gap: 20px;
+      padding: 24px 0;
+      position: relative;
+    }
+    .step:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      left: 19px;
+      top: 60px;
+      bottom: 0;
+      width: 2px;
+      background: linear-gradient(to bottom, var(--mint), transparent);
+    }
+    .step-num {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(82,183,136,0.15);
+      border: 2px solid var(--mint);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 0.9rem;
+      color: var(--mint);
+      flex-shrink: 0;
+    }
+    .step-body h3 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 1.05rem;
+      color: var(--white);
+      margin-bottom: 4px;
+    }
+    .step-body p {
+      font-size: 0.88rem;
+      color: var(--text-dim);
+      line-height: 1.6;
+    }
+
+    /* ── FEATURES ── */
+    #features {
+      padding: 80px 24px;
+      background: var(--deep);
+      position: relative;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      max-width: 420px;
+      margin: 0 auto;
+    }
+    .feature-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px;
+      padding: 20px 16px;
+      transition: background 0.3s, border-color 0.3s, transform 0.3s;
+    }
+    .feature-card:hover {
+      background: rgba(82,183,136,0.08);
+      border-color: rgba(82,183,136,0.3);
+      transform: translateY(-3px);
+    }
+    .feature-card.wide { grid-column: span 2; }
+    .feature-icon {
+      font-size: 1.6rem;
+      margin-bottom: 10px;
+      display: block;
+    }
+    .feature-card h3 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.92rem;
+      color: var(--white);
+      margin-bottom: 4px;
+    }
+    .feature-card p {
+      font-size: 0.78rem;
+      color: var(--text-dim);
+      line-height: 1.5;
+    }
+
+    /* ── ECO STATS ── */
+    #impact {
+      padding: 60px 24px;
+      background: linear-gradient(135deg, var(--forest) 0%, var(--sage) 100%);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    #impact::before {
+      content: '🌿';
+      position: absolute;
+      font-size: 12rem;
+      opacity: 0.06;
+      top: -20px;
+      right: -30px;
+      pointer-events: none;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      max-width: 400px;
+      margin: 32px auto 0;
+    }
+    .stat-item h2 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: clamp(1.6rem, 7vw, 2.4rem);
+      color: var(--white);
+      line-height: 1;
+    }
+    .stat-item h2 span { color: var(--lime); }
+    .stat-item p {
+      font-size: 0.72rem;
+      color: rgba(183,228,199,0.8);
+      margin-top: 4px;
+      line-height: 1.4;
+    }
+
+    /* ── CTA SECTION ── */
+    #cta {
+      padding: 80px 24px 60px;
+      background: var(--deep);
+      text-align: center;
+    }
+    .cta-box {
+      background: linear-gradient(135deg, rgba(45,106,79,0.3), rgba(82,183,136,0.1));
+      border: 1px solid rgba(82,183,136,0.25);
+      border-radius: 28px;
+      padding: 40px 24px;
+      max-width: 420px;
+      margin: 0 auto;
+      position: relative;
+      overflow: hidden;
+    }
+    .cta-box::before {
+      content: '';
+      position: absolute;
+      top: -50%; left: -50%;
+      width: 200%; height: 200%;
+      background: radial-gradient(circle at center, rgba(82,183,136,0.06) 0%, transparent 60%);
+      animation: pulse 4s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.1); opacity: 0.7; }
+    }
+    .cta-box h2 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: clamp(1.5rem, 6vw, 2rem);
+      color: var(--white);
+      margin-bottom: 12px;
+      position: relative;
+    }
+    .cta-box p {
+      font-size: 0.9rem;
+      color: var(--text-dim);
+      margin-bottom: 28px;
+      line-height: 1.6;
+      position: relative;
+    }
+    .cta-email-form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      position: relative;
+    }
+    .cta-email-form input {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(82,183,136,0.25);
+      border-radius: 50px;
+      padding: 14px 20px;
+      color: var(--white);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+    .cta-email-form input:focus { border-color: var(--mint); }
+    .cta-email-form input::placeholder { color: var(--text-dim); }
+    .cta-email-form button {
+      background: linear-gradient(135deg, var(--coral), #e55a2b);
+      color: white;
+      border: none;
+      padding: 14px 24px;
+      border-radius: 50px;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      letter-spacing: 0.3px;
+    }
+    .cta-email-form button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(255,107,53,0.45);
+    }
+
+    /* ── SOCIAL ── */
+    #social {
+      padding: 40px 24px 20px;
+      background: var(--deep);
+      text-align: center;
+    }
+    .social-label {
+      font-size: 0.78rem;
+      color: var(--text-dim);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+    .social-links {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .social-link {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: var(--lime);
+      padding: 8px 16px;
+      border-radius: 50px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      text-decoration: none;
+      transition: background 0.2s, border-color 0.2s, transform 0.2s;
+    }
+    .social-link:hover {
+      background: rgba(82,183,136,0.12);
+      border-color: rgba(82,183,136,0.35);
+      transform: translateY(-2px);
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      padding: 32px 24px;
+      background: var(--deep);
+      border-top: 1px solid rgba(255,255,255,0.06);
+      text-align: center;
+    }
+    footer p {
+      font-size: 0.78rem;
+      color: var(--text-dim);
+      line-height: 1.8;
+    }
+    footer a { color: var(--mint); text-decoration: none; }
+
+    /* ── SUCCESS STATE ── */
+    .success-msg {
+      display: none;
+      color: var(--mint);
+      font-size: 0.88rem;
+      font-weight: 500;
+      padding: 10px;
+      text-align: center;
+    }
+
+    /* ── SCROLL REVEAL ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-logo">coch<span class="nav-pin" aria-label="i"><svg viewBox="0 0 28 44" xmlns="http://www.w3.org/2000/svg" style="height:1.1em;width:auto;vertical-align:middle;margin:0 0.5px;filter:drop-shadow(0 0 4px rgba(255,107,53,0.8));"><path d="M14 2C8.48 2 4 6.48 4 12c0 7.5 10 26 10 26s10-18.5 10-26c0-5.52-4.48-10-10-10z" fill="#FF6B35"/><circle cx="14" cy="12" r="4.5" fill="rgba(255,255,255,0.9)"/><circle cx="11.5" cy="9.5" r="2" fill="rgba(255,255,255,0.5)"/></svg></span>wawa</div>
+    <button class="nav-cta" onclick="document.getElementById('cta').scrollIntoView({behavior:'smooth'})">Únete gratis</button>
+  </nav>
+
+  <!-- HERO -->
+  <section id="hero">
+    <div class="bg-mesh"></div>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+
+    <!-- Full hero scene SVG: mountains + road rising from bottom through logo -->
+    <svg class="hero-scene" viewBox="0 0 375 700" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+      <defs>
+        <!-- Road gradient: bright at bottom, fades to point at top -->
+        <linearGradient id="roadGrad" x1="0" y1="1" x2="0" y2="0">
+          <stop offset="0%"   stop-color="#0a1f12" stop-opacity="1"/>
+          <stop offset="60%"  stop-color="#1A3C2E" stop-opacity="0.85"/>
+          <stop offset="100%" stop-color="#1A3C2E" stop-opacity="0"/>
+        </linearGradient>
+        <!-- Lane dash gradient -->
+        <linearGradient id="dashGrad" x1="0" y1="1" x2="0" y2="0">
+          <stop offset="0%"  stop-color="#52B788" stop-opacity="0.9"/>
+          <stop offset="100%" stop-color="#52B788" stop-opacity="0.1"/>
+        </linearGradient>
+        <!-- Road edge glow -->
+        <linearGradient id="edgeGrad" x1="0" y1="1" x2="0" y2="0">
+          <stop offset="0%"  stop-color="#52B788" stop-opacity="0.6"/>
+          <stop offset="100%" stop-color="#52B788" stop-opacity="0"/>
+        </linearGradient>
+        <!-- Glow filter for pin -->
+        <filter id="pinGlow">
+          <feGaussianBlur stdDeviation="4" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+        <!-- Clip for animated dashes -->
+        <clipPath id="roadClip">
+          <polygon points="120,700 185,310 190,310 255,700"/>
+        </clipPath>
+      </defs>
+
+      <!-- Far mountains (back layer) -->
+      <polygon points="0,480 55,340 115,410 175,310 235,390 295,280 355,370 375,350 375,560 0,560"
+               fill="rgba(15,40,25,0.55)"/>
+      <!-- Snow caps far -->
+      <polygon points="175,310 190,345 160,345" fill="rgba(183,228,199,0.2)"/>
+      <polygon points="295,280 307,312 283,312" fill="rgba(183,228,199,0.18)"/>
+
+      <!-- Mid mountains -->
+      <polygon points="0,520 45,400 100,450 160,370 220,430 275,350 335,420 375,390 375,600 0,600"
+               fill="rgba(26,60,46,0.7)"/>
+      <!-- Snow caps mid -->
+      <polygon points="160,370 172,400 148,400" fill="rgba(183,228,199,0.22)"/>
+      <polygon points="275,350 285,378 265,378" fill="rgba(183,228,199,0.2)"/>
+
+      <!-- Near hills -->
+      <polygon points="0,580 80,500 160,540 220,490 300,530 375,480 375,700 0,700"
+               fill="rgba(20,50,30,0.8)"/>
+
+      <!-- ═══ ROAD — wide at bottom, narrows to SHARP point at pin/i position ═══ -->
+      <!-- Road surface: vanishing point = 187.5, 310 (center, mid-height — aligns with logo "i") -->
+      <polygon points="120,700 185,310 190,310 255,700" fill="url(#roadGrad)"/>
+
+      <!-- Road edge glow lines converging to pin -->
+      <line x1="120" y1="700" x2="185" y2="310" stroke="url(#edgeGrad)" stroke-width="2" opacity="0.9"/>
+      <line x1="255" y1="700" x2="190" y2="310" stroke="url(#edgeGrad)" stroke-width="2" opacity="0.9"/>
+
+      <!-- Animated centre dashes (clipped to road shape) -->
+      <g clip-path="url(#roadClip)">
+        <g class="road-dash">
+          <rect x="186" y="315" width="3"  height="18" rx="1.5" fill="url(#dashGrad)"/>
+          <rect x="186" y="344" width="3"  height="18" rx="1.5" fill="url(#dashGrad)" opacity="0.85"/>
+          <rect x="185" y="374" width="4"  height="20" rx="2"   fill="url(#dashGrad)" opacity="0.78"/>
+          <rect x="185" y="406" width="5"  height="22" rx="2.5" fill="url(#dashGrad)" opacity="0.70"/>
+          <rect x="184" y="441" width="7"  height="24" rx="3"   fill="url(#dashGrad)" opacity="0.63"/>
+          <rect x="183" y="479" width="9"  height="26" rx="3"   fill="url(#dashGrad)" opacity="0.56"/>
+          <rect x="182" y="520" width="11" height="28" rx="3"   fill="url(#dashGrad)" opacity="0.50"/>
+          <rect x="181" y="563" width="14" height="30" rx="3"   fill="url(#dashGrad)" opacity="0.44"/>
+          <rect x="179" y="609" width="17" height="32" rx="3"   fill="url(#dashGrad)" opacity="0.38"/>
+          <rect x="177" y="656" width="21" height="34" rx="3"   fill="url(#dashGrad)" opacity="0.32"/>
+        </g>
+      </g>
+
+      <!-- Car driving up toward the pin -->
+      <g class="car-dot" transform="translate(180, 510)">
+        <rect x="0" y="5"  width="15" height="9"  rx="2.5" fill="rgba(82,183,136,0.75)"/>
+        <rect x="2" y="1"  width="10" height="6"  rx="1.5" fill="rgba(82,183,136,0.55)"/>
+        <circle cx="3"  cy="14" r="1.8" fill="rgba(30,30,30,0.9)"/>
+        <circle cx="12" cy="14" r="1.8" fill="rgba(30,30,30,0.9)"/>
+        <circle cx="2"  cy="8"  r="1.5" fill="rgba(255,240,180,0.9)"/>
+        <circle cx="13" cy="8"  r="1.5" fill="rgba(255,240,180,0.9)"/>
+      </g>
+
+      <!-- Vanishing point glow — sits right behind the pin SVG -->
+      <circle cx="187.5" cy="310" r="22" fill="rgba(255,107,53,0.08)"/>
+      <circle cx="187.5" cy="310" r="11" fill="rgba(255,107,53,0.15)"/>
+      <circle cx="187.5" cy="310" r="5"  fill="rgba(255,107,53,0.45)"/>
+    </svg>
+
+    <div class="hero-content">
+      <div class="hero-badge">Carpooling chileno — 100% verde</div>
+
+      <!-- Hero logo: coch + 📍 emoji pin (replaces i) + wawa -->
+      <!-- Road vanishing point in SVG is aligned to sit right behind this pin -->
+      <div class="hero-logo-wrap">
+        <h1 class="hero-logo">
+          coch<span class="hero-pin-wrap" aria-label="i">
+            <span class="pin-pulse"></span>
+            <span class="pin-pulse" style="animation-delay:0.9s;"></span>
+            <span class="pin-emoji">📍</span>
+          </span>wawa
+        </h1>
+      </div>
+
+      <p class="hero-tagline">Viaja juntos. Llega mejor.</p>
+      <p class="hero-sub">La primera app de carpooling hecha en Chile, para Chile. Ahorra en bencina, reduce tu CO₂ y viaja con personas verificadas.</p>
+
+      <div class="email-form">
+        <input type="email" id="hero-email" placeholder="Tu correo electrónico" />
+        <button onclick="handleSignup('hero-email', 'hero-success')">Únete →</button>
+      </div>
+      <p class="success-msg" id="hero-success">✅ ¡Listo! Te avisamos cuando lancemos.</p>
+      <p class="form-note">Próximamente en Google Play · Sin spam, prometido.</p>
+
+      <div class="pills">
+        <span class="pill">🇨🇱 Hecho en Chile</span>
+        <span class="pill">🔒 RUT Verificado</span>
+        <span class="pill">🌿 Reduce CO₂</span>
+        <span class="pill">🚨 Botón SOS</span>
+        <span class="pill">📍 GPS en Vivo</span>
+        <span class="pill">🏳️‍🌈 Espacio Seguro</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <!-- HOW IT WORKS -->
+  <section id="how" style="padding:80px 24px;background:var(--forest);">
+    <div style="max-width:420px;margin:0 auto;">
+      <p class="section-label reveal-item">Cómo funciona</p>
+      <h2 class="section-title reveal-item">Simple como<br><em>pedir un café</em></h2>
+      <div class="steps">
+
+        <!-- STEP 1 — IDENTITY + VEHICLE VERIFICATION -->
+        <div class="step reveal-item">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <h3>Identidad + Vehículo verificados al 100%</h3>
+            <p>Sin documentos válidos, <strong style="color:var(--lime)">no existe el viaje.</strong> Tanto conductor como pasajero pasan por verificación completa antes de su primer viaje.</p>
+            <div class="verify-grid">
+              <div class="verify-item">
+                <span>📸</span>
+                <div><strong>RUT chileno</strong><small>Identidad real confirmada</small></div>
+              </div>
+              <div class="verify-item">
+                <span>📸</span>
+                <div><strong>Foto carnet</strong><small>Selfie vs. documento</small></div>
+              </div>
+              <div class="verify-item">
+                <span>🚗</span>
+                <div><strong>Patente del vehículo</strong><small>Registrada y validada</small></div>
+              </div>
+              <div class="verify-item">
+                <span>📋</span>
+                <div><strong>Revisión técnica</strong><small>Vehículo legal al día</small></div>
+              </div>
+              <div class="verify-item">
+                <span>🛡️</span>
+                <div><strong>Seguro obligatorio</strong><small>SOAP vigente verificado</small></div>
+              </div>
+              <div class="verify-item">
+                <span>✅</span>
+                <div><strong>Perfil auditado</strong><small>Aprobado por Cochiwawa</small></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 2 — DRIVER CREATES TRIP + ANY VEHICLE -->
+        <div class="step reveal-item">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <h3>¿Conduces? Publica tu viaje en 60 seg</h3>
+            <div class="driver-box">
+              <div class="driver-box-header">
+                <span class="driver-avatar">🧑‍🤝‍🧑</span>
+                <div>
+                  <strong>No eres un chofer profesional.</strong>
+                  <small>Eres una persona yendo de A → B, igual que tus pasajeros.</small>
+                </div>
+              </div>
+              <p>Completas el formulario de tu viaje una sola vez — la app gestiona todo lo demás automáticamente.</p>
+            </div>
+
+            <!-- Driver form preview -->
+            <div class="driver-form-preview">
+              <div class="form-label">📋 Formulario del conductor</div>
+              <div class="form-row">
+                <span class="form-icon">📍</span>
+                <div><strong>Punto de salida exacto</strong><small>Dirección o punto de referencia</small></div>
+              </div>
+              <div class="form-row">
+                <span class="form-icon">🏁</span>
+                <div><strong>Destino final</strong><small>A dónde vas realmente</small></div>
+              </div>
+              <div class="form-row highlight">
+                <span class="form-icon">📌</span>
+                <div>
+                  <strong>Paradas intermedias <span class="form-badge">Opcional</span></strong>
+                  <small>¿Puedes recoger personas en el camino? Declara los puntos de parada en tu ruta — pasajeros en esa zona podrán unirse al viaje desde ahí.</small>
+                </div>
+              </div>
+              <div class="form-row">
+                <span class="form-icon">📅</span>
+                <div><strong>Fecha y hora de salida</strong><small>Publicada y visible para todos</small></div>
+              </div>
+              <div class="form-row">
+                <span class="form-icon">💺</span>
+                <div><strong>Asientos disponibles</strong><small>Cuántos pasajeros caben</small></div>
+              </div>
+              <div class="form-row">
+                <span class="form-icon">🚗</span>
+                <div><strong>Vehículo y preferencias</strong><small>Tipo, ambiente, género del viaje</small></div>
+              </div>
+            </div>
+
+            <!-- Vehicle types -->
+            <div class="vehicle-label">🚦 ¿Qué vehículo tienes?</div>
+            <div class="vehicle-grid">
+              <div class="vehicle-card"><span>🛵</span><small>Scooter</small></div>
+              <div class="vehicle-card"><span>🏍️</span><small>Moto</small></div>
+              <div class="vehicle-card"><span>🚗</span><small>Auto</small></div>
+              <div class="vehicle-card"><span>🚙</span><small>SUV/4x4</small></div>
+              <div class="vehicle-card"><span>🚐</span><small>Van</small></div>
+              <div class="vehicle-card"><span>🚌</span><small>Minibús</small></div>
+            </div>
+            <p style="font-size:0.78rem;color:var(--text-dim);margin-top:8px;text-align:center;">Cualquier vehículo verificado es bienvenido en Cochiwawa.</p>
+
+            <div class="step-tags" style="margin-top:12px;">
+              <span class="stag">🛣️ Ruta + paradas declaradas</span>
+              <span class="stag">🌿 Menos CO₂</span>
+              <span class="stag">👥 Conoce gente</span>
+              <span class="stag">💰 Recupera gastos</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 3 — AI PRICING -->
+        <div class="step reveal-item">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <h3>La IA calcula el precio justo — siempre</h3>
+            <div class="ai-price-box">
+              <div class="ai-price-header">
+                <span class="ai-chip">🤖 IA Cochiwawa — Motor de Precios</span>
+              </div>
+              <p>Nuestra inteligencia artificial analiza distancia, bencina, peajes y número de pasajeros para calcular automáticamente <strong style="color:var(--lime)">cuánto le corresponde pagar a cada uno.</strong> Nadie negocia. Nadie se incomoda.</p>
+              <div class="ai-options">
+                <div class="ai-opt green">
+                  <span>🆓</span>
+                  <div><strong>Viaje solidario</strong><small>El conductor no cobra nada. Solo comparte el camino.</small></div>
+                </div>
+                <div class="ai-opt amber">
+                  <span>⚖️</span>
+                  <div><strong>Costo compartido exacto</strong><small>La IA divide los gastos reales en partes iguales. 100% transparente.</small></div>
+                </div>
+                <div class="ai-opt coral">
+                  <span>➕</span>
+                  <div><strong>+ Cargo voluntario del conductor</strong><small>Puede agregar un monto extra — pero la IA establece un <strong style="color:var(--coral)">límite máximo permitido.</strong></small></div>
+                </div>
+              </div>
+
+              <!-- AI Cap explanation -->
+              <div class="ai-cap-box">
+                <div class="ai-cap-header">
+                  <span>🛡️</span>
+                  <strong>Sin extorsión. Sin cobros ocultos. Garantizado.</strong>
+                </div>
+                <p>La IA fija un <strong style="color:var(--lime)">tope máximo</strong> que el conductor no puede superar. El pasajero siempre sabe de antemano el precio total antes de reservar — sin sorpresas al llegar, sin presión, sin negociación incómoda.</p>
+                <div class="ai-cap-pills">
+                  <span class="cap-pill">✅ Precio visible antes de reservar</span>
+                  <span class="cap-pill">✅ Tope fijado por IA</span>
+                  <span class="cap-pill">✅ Sin cargos extra en ruta</span>
+                  <span class="cap-pill">✅ Historial de pagos en la app</span>
+                </div>
+              </div>
+            </div>
+            <div class="step-tags" style="margin-top:12px;">
+              <span class="stag">🤖 Precio calculado por IA</span>
+              <span class="stag">🛡️ Tope máximo protegido</span>
+              <span class="stag">📊 100% transparente</span>
+              <span class="stag">0️⃣ Sin cobros ocultos</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 4 — BOOKING -->
+        <div class="step reveal-item">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <h3>Reserva $999 CLP — todo queda claro</h3>
+            <p>Al confirmar tu cupo, <strong style="color:var(--lime)">no necesitas preguntar nada.</strong> Toda la información del viaje ya está en la app desde el momento en que el conductor publicó.</p>
+
+            <!-- Trip info card - what passenger sees instantly -->
+            <div class="trip-info-card">
+              <div class="trip-info-header">
+                <span class="ai-chip">📱 Lo que ves en la app al reservar</span>
+              </div>
+              <div class="trip-info-row">
+                <span>📍</span><span>Punto exacto de encuentro</span>
+              </div>
+              <div class="trip-info-row">
+                <span>📅</span><span>Fecha y hora de salida</span>
+              </div>
+              <div class="trip-info-row">
+                <span>🏁</span><span>Destino final del viaje</span>
+              </div>
+              <div class="trip-info-row">
+                <span>📌</span><span>Paradas intermedias declaradas</span>
+              </div>
+              <div class="trip-info-row">
+                <span>💰</span><span>Precio total calculado por IA</span></div>
+              <div class="trip-info-row">
+                <span>🚗</span><span>Vehículo y patente del conductor</span>
+              </div>
+            </div>
+
+            <!-- Chat clarification -->
+            <div class="chat-note">
+              <span>💬</span>
+              <div>
+                <strong>El chat grupal es para conectar — no para coordinar</strong>
+                <p>Los detalles logísticos los pone el conductor en el formulario. El chat es para presentarse, romper el hielo y hacer el viaje más humano. La app hace el resto.</p>
+              </div>
+            </div>
+
+            <div class="meet-box">
+              <span class="meet-icon">🤝</span>
+              <div>
+                <strong>Pago al encuentro</strong>
+                <p>El monto total se paga en persona cuando conductor y pasajeros se reúnen. Sin intermediarios, cara a cara.</p>
+              </div>
+            </div>
+
+            <div class="step-tags">
+              <span class="stag">📱 Info completa en la app</span>
+              <span class="stag">💬 Chat social</span>
+              <span class="stag">🤝 Pago al encuentro</span>
+              <span class="stag">🔒 Cupo asegurado</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 5 — TRAVEL SAFE -->
+        <div class="step reveal-item">
+          <div class="step-num">5</div>
+          <div class="step-body">
+            <h3>Viaja seguro/a y evalúa</h3>
+            <p>GPS en vivo durante todo el trayecto. Botón SOS con un toque. Al llegar, tu calificación construye una comunidad de confianza real.</p>
+            <div class="step-tags">
+              <span class="stag">📍 GPS en vivo</span>
+              <span class="stag">🚨 Botón SOS</span>
+              <span class="stag">⭐ Rating mutuo</span>
+              <span class="stag">🔁 Historial de viajes</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- COMMUNITY MANIFESTO — no brand names -->
+  <section id="manifesto" style="padding:60px 24px;background:var(--deep);position:relative;overflow:hidden;">
+    <div style="position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 50%,rgba(82,183,136,0.05) 0%,transparent 70%);pointer-events:none;"></div>
+    <div style="max-width:420px;margin:0 auto;text-align:center;position:relative;">
+      <p class="section-label reveal-item">Nuestra filosofía</p>
+      <h2 class="section-title reveal-item">Apps de transporte<br>vs <em>comunidad real</em></h2>
+      <div class="manifesto-grid">
+        <div class="manifesto-card reveal-item">
+          <div class="manifesto-vs">
+            <div class="vs-col bad">
+              <span class="vs-icon">🚕</span>
+              <strong>Apps tradicionales</strong>
+              <ul>
+                <li>Chofer profesional</li>
+                <li>Comisión 25–35%</li>
+                <li>Servicio comercial</li>
+                <li>Extraño verificado solo por la app</li>
+                <li>Precio fijo e impuesto</li>
+              </ul>
+            </div>
+            <div class="vs-divider">VS</div>
+            <div class="vs-col good">
+              <span class="vs-icon">🧑‍🤝‍🧑</span>
+              <strong>Cochiwawa</strong>
+              <ul>
+                <li>Persona como tú</li>
+                <li>Sin comisiones abusivas</li>
+                <li>Viaje compartido real</li>
+                <li>Comunidad verificada al 100%</li>
+                <li>Precio justo calculado por IA</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="reveal-item">
+          <p style="color:var(--text-dim);font-size:0.85rem;margin-bottom:16px;">Los conductores de Cochiwawa viajan porque quieren:</p>
+          <div class="reason-row"><span>💸</span><span>Reducir su propio costo de viaje</span></div>
+          <div class="reason-row"><span>🌿</span><span>Bajar su huella de carbono</span></div>
+          <div class="reason-row"><span>👥</span><span>Conocer gente interesante</span></div>
+          <div class="reason-row"><span>🛣️</span><span>Aprovechar una ruta que ya hacen</span></div>
+          <div class="reason-row"><span>❤️</span><span>Ser parte de una comunidad real</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RIDE PREFERENCES -->
+  <section id="preferences" style="padding:60px 24px;background:var(--forest);overflow:hidden;position:relative;">
+    <div style="max-width:420px;margin:0 auto;text-align:center;">
+      <p class="section-label reveal-item">Tu espacio, tus reglas</p>
+      <h2 class="section-title reveal-item">Viaja como<br><em>te sientes seguro/a</em></h2>
+      <p style="color:var(--text-dim);font-size:0.9rem;margin-bottom:32px;line-height:1.6;" class="reveal-item">
+        Tú decides con quién compartes el viaje. Sin presiones. Espacio exclusivo o abierto — lo que más te acomode.
+      </p>
+      <div class="pref-showcase reveal-item">
+        <div class="pref-big female-big">
+          <div class="pref-big-icon">👩</div>
+          <h4>Solo Mujeres</h4>
+          <p>Conductoras y pasajeras únicamente. Seguridad y comodidad sin compromisos.</p>
+          <div class="pref-mode-tag">Exclusivo</div>
+        </div>
+        <div class="pref-big male-big">
+          <div class="pref-big-icon">👨</div>
+          <h4>Solo Hombres</h4>
+          <p>Espacio masculino exclusivo para quienes así lo prefieran.</p>
+          <div class="pref-mode-tag">Exclusivo</div>
+        </div>
+        <div class="pref-big mixed-big">
+          <div class="pref-big-icon">🤝</div>
+          <h4>Mixto</h4>
+          <p>Abierto a todos. Comunidad diversa y respetuosa sin filtros.</p>
+          <div class="pref-mode-tag" style="background:rgba(82,183,136,0.15);border-color:rgba(82,183,136,0.3);color:var(--mint);">Abierto</div>
+        </div>
+        <div class="pref-big lgbtq-big">
+          <div class="pref-big-icon">🏳️‍🌈</div>
+          <h4>LGBTQ+ Only</h4>
+          <p>Espacio seguro y exclusivo. Cero discriminación, siempre.</p>
+          <div class="pref-mode-tag" style="background:rgba(255,200,100,0.12);border-color:rgba(255,200,100,0.3);color:#ffc864;">Exclusivo</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section id="features" style="padding:80px 24px;background:var(--deep);">
+    <div style="max-width:420px;margin:0 auto;text-align:center;">
+      <p class="section-label reveal-item">Por qué Cochiwawa</p>
+      <h2 class="section-title reveal-item">Tecnología de<br><em>última generación</em></h2>
+      <div class="features-grid">
+        <div class="feature-card reveal-item">
+          <span class="feature-icon">🤖</span>
+          <h3>IA de Precios</h3>
+          <p>Cálculo automático justo. Sin negociación, sin incomodidad.</p>
+        </div>
+        <div class="feature-card reveal-item">
+          <span class="feature-icon">🔐</span>
+          <h3>Verificación Total</h3>
+          <p>RUT, carnet, patente, SOAP y revisión técnica validados.</p>
+        </div>
+        <div class="feature-card reveal-item">
+          <span class="feature-icon">🚨</span>
+          <h3>Botón SOS</h3>
+          <p>Alerta de emergencia instantánea con un toque.</p>
+        </div>
+        <div class="feature-card reveal-item">
+          <span class="feature-icon">📍</span>
+          <h3>GPS en Vivo</h3>
+          <p>Seguimiento en tiempo real durante todo el trayecto.</p>
+        </div>
+        <div class="feature-card wide reveal-item">
+          <span class="feature-icon">💬</span>
+          <h3>Chat grupal automático al reservar</h3>
+          <p>Al confirmar tu cupo, se crea el grupo al instante. Coordina todo dentro de la app — sin compartir tu número.</p>
+        </div>
+        <div class="feature-card wide reveal-item">
+          <span class="feature-icon">🚗</span>
+          <h3>Cualquier vehículo verificado</h3>
+          <p>Scooter, moto, auto, SUV, van o minibús. Si está verificado y asegurado, es bienvenido.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- COMMUTER CARPOOLING -->
+  <section id="commuter" style="padding:80px 24px;background:var(--deep);position:relative;overflow:hidden;">
+    <!-- animated background -->
+    <div style="position:absolute;inset:0;background:radial-gradient(ellipse 100% 50% at 0% 50%,rgba(82,183,136,0.07) 0%,transparent 60%);pointer-events:none;"></div>
+    <div style="position:absolute;inset:0;background:radial-gradient(ellipse 80% 50% at 100% 50%,rgba(255,107,53,0.04) 0%,transparent 60%);pointer-events:none;"></div>
+
+    <div style="max-width:420px;margin:0 auto;position:relative;">
+      <p class="section-label reveal-item">Para ir al trabajo</p>
+      <h2 class="section-title reveal-item">Tu vecino va<br><em>en tu dirección</em></h2>
+      <p style="color:var(--text-dim);font-size:0.9rem;line-height:1.6;margin-bottom:28px;" class="reveal-item">
+        No hace falta trabajar en la misma empresa. Basta con vivir en la misma zona y trabajar en el mismo sector de la ciudad. Cochiwawa conecta personas por <strong style="color:var(--lime)">origen y destino</strong> — no por empresa, no por cargo, no por contacto previo. Tu vecino de barrio podría ser tu compañero de ruta diaria.
+      </p>
+
+      <!-- Zone diagram -->
+      <div class="zone-diagram reveal-item">
+        <div class="zone-box origin">
+          <span>🏘️</span>
+          <strong>Tu zona</strong>
+          <small>Tu barrio / comuna</small>
+        </div>
+        <div class="zone-arrow">
+          <span class="zone-car">🚗</span>
+          <div class="zone-line"></div>
+        </div>
+        <div class="zone-box destination">
+          <span>🏙️</span>
+          <strong>Zona laboral</strong>
+          <small>Sector donde trabajas</small>
+        </div>
+      </div>
+      <p style="font-size:0.78rem;color:var(--text-dim);text-align:center;margin:0 0 24px;">
+        ✅ Mismo barrio → mismo sector. Empresa diferente. Vidas paralelas. Viaje compartido.
+      </p>
+
+      <!-- The big win card -->
+      <div class="commuter-hero-card reveal-item">
+        <div class="commuter-route">
+          <div class="commuter-node">
+            <div class="cnode-dot home"></div>
+            <span>🏠 Casa</span>
+          </div>
+          <div class="commuter-line">
+            <span class="commuter-car-anim">🚗</span>
+          </div>
+          <div class="commuter-node">
+            <div class="cnode-dot work"></div>
+            <span>🏢 Trabajo</span>
+          </div>
+        </div>
+        <div class="commuter-math">
+          <div class="cmath-item">
+            <strong>Lunes → Viernes</strong>
+            <small>Misma ruta, mismo horario</small>
+          </div>
+          <div class="cmath-divide">÷</div>
+          <div class="cmath-item">
+            <strong>3–4 personas</strong>
+            <small>Vecinos de ruta</small>
+          </div>
+          <div class="cmath-equals">=</div>
+          <div class="cmath-result">
+            <strong style="color:var(--lime);">Hasta 75%</strong>
+            <small>menos gasto mensual</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Benefits grid -->
+      <div class="commuter-grid reveal-item">
+        <div class="commuter-card">
+          <span>🗺️</span>
+          <h4>Por zona, no empresa</h4>
+          <p>Vives en Maipú, trabajas en Las Condes — Cochiwawa encuentra a otros que hacen el mismo trayecto, sin importar dónde trabajan.</p>
+        </div>
+        <div class="commuter-card">
+          <span>🔁</span>
+          <h4>Viajes recurrentes</h4>
+          <p>Publica tu ruta una sola vez. El sistema gestiona reservas automáticamente de lunes a viernes.</p>
+        </div>
+        <div class="commuter-card">
+          <span>⏰</span>
+          <h4>Horario fijo</h4>
+          <p>Todos saben a qué atenerse. La puntualidad queda respaldada por el sistema de reputación.</p>
+        </div>
+        <div class="commuter-card">
+          <span>👥</span>
+          <h4>Comunidad de ruta</h4>
+          <p>Con el tiempo, los mismos vecinos comparten el viaje — se genera confianza, amistad y rutina positiva.</p>
+        </div>
+      </div>
+
+      <!-- Real scenario -->
+      <div class="commuter-scenario reveal-item">
+        <div class="scenario-label">📍 Ejemplo real</div>
+        <p>Carlos vive en <strong style="color:var(--white)">Puente Alto</strong> y trabaja en <strong style="color:var(--white)">Santiago Centro</strong>. Publica su ruta en Cochiwawa. Tres personas del mismo sector — distintas empresas, misma dirección — se unen a su viaje diario. La IA calcula: <strong style="color:var(--lime)">$2.800 CLP por persona por trayecto</strong> en lugar de $11.000 en transporte o $20.000 en taxi. Todos ganan. El planeta también.</p>
+      </div>
+
+      <div class="commuter-soon reveal-item">
+        <span class="ai-chip">🤖 Próximamente</span>
+        <p style="margin-top:10px;font-size:0.82rem;color:var(--text-dim);line-height:1.5;">
+          <strong style="color:var(--lime);">Cochiwawa Empresas</strong> — plataforma B2B para gestión de carpooling corporativo por zona, con reportes de CO₂ y beneficios para equipos.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- COMMUNITY + RATINGS -->
+  <section id="community" style="padding:80px 24px;background:var(--forest);position:relative;overflow:hidden;">
+    <div style="position:absolute;inset:0;background:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(82,183,136,0.06) 0%,transparent 60%);pointer-events:none;"></div>
+    <div style="max-width:420px;margin:0 auto;text-align:center;position:relative;">
+
+      <!-- COMMUNITY PHOTOS -->
+      <p class="section-label reveal-item">Comunidad Cochiwawa</p>
+      <h2 class="section-title reveal-item">Cada viaje es<br><em>una historia</em></h2>
+      <p style="color:var(--text-dim);font-size:0.9rem;line-height:1.6;margin-bottom:28px;" class="reveal-item">
+        Cochiwawa no es solo llegar — es el camino. Durante el viaje, te invitamos a capturar el momento y compartirlo con la comunidad. Tus fotos y videos en ruta alimentan la historia colectiva de Cochiwawa.
+      </p>
+
+      <div class="photo-card reveal-item">
+        <div class="photo-card-header">
+          <span class="photo-icon">📸</span>
+          <div>
+            <strong>Captura el viaje</strong>
+            <small>Comparte en redes con #Cochiwawa</small>
+          </div>
+        </div>
+        <div class="photo-reasons">
+          <div class="photo-reason"><span>🌄</span><span>Paisajes en ruta que nunca verías solo</span></div>
+          <div class="photo-reason"><span>🤝</span><span>El momento en que conociste a alguien increíble</span></div>
+          <div class="photo-reason"><span>🌿</span><span>Tu aporte real al medioambiente documentado</span></div>
+          <div class="photo-reason"><span>🎉</span><span>Celebra cada viaje compartido con la comunidad</span></div>
+        </div>
+        <div class="photo-social">
+          <span class="social-tag">📸 Instagram</span>
+          <span class="social-tag">🎵 TikTok</span>
+          <span class="social-tag">#Cochiwawa</span>
+          <span class="social-tag">#ViajaJuntos</span>
+        </div>
+      </div>
+
+      <!-- RATING SYSTEM -->
+      <div style="height:48px;"></div>
+      <p class="section-label reveal-item">Sistema de reputación</p>
+      <h2 class="section-title reveal-item">Los mejores<br><em>se destacan solos</em></h2>
+      <p style="color:var(--text-dim);font-size:0.9rem;line-height:1.6;margin-bottom:24px;" class="reveal-item">
+        Después de cada viaje, conductor y pasajeros se evalúan mutuamente. Con el tiempo, quienes ofrecen la mejor experiencia naturalmente suben en visibilidad — sin trucos, sin pago, solo por ser buenos viajeros.
+      </p>
+
+      <div class="rating-box reveal-item">
+        <div class="rating-row">
+          <div class="rating-badge gold">
+            <span>⭐⭐⭐⭐⭐</span>
+            <strong>Conductor Top</strong>
+            <small>+50 viajes · 4.9★ promedio</small>
+          </div>
+          <div class="rating-perks">
+            <div class="rating-perk">✅ Mayor visibilidad en búsquedas</div>
+            <div class="rating-perk">✅ Insignia verificada de confianza</div>
+            <div class="rating-perk">✅ Acceso anticipado a nuevas funciones</div>
+            <div class="rating-perk">✅ Prioridad en match de pasajeros</div>
+          </div>
+        </div>
+        <div class="rating-note">
+          <span>💡</span>
+          <p>El sistema es <strong style="color:var(--lime)">100% orgánico</strong> — no se puede pagar por mejor posición. Solo la experiencia real y las evaluaciones honestas determinan tu reputación.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- COMING SOON — AI HEAVY -->
+  <section id="coming-soon" style="padding:80px 24px;background:var(--deep);position:relative;overflow:hidden;">
+    <div style="position:absolute;top:0;left:0;right:0;bottom:0;background:radial-gradient(ellipse 120% 60% at 50% 100%,rgba(82,183,136,0.08) 0%,transparent 60%);pointer-events:none;"></div>
+    <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:500px;height:500px;background:radial-gradient(circle,rgba(82,183,136,0.05) 0%,transparent 70%);border-radius:50%;animation:pulse 6s ease-in-out infinite;pointer-events:none;"></div>
+
+    <div style="max-width:420px;margin:0 auto;text-align:center;position:relative;">
+      <div class="coming-badge reveal-item">🤖 Impulsado por Inteligencia Artificial</div>
+      <h2 class="section-title reveal-item">El futuro del<br><em>transporte inteligente</em></h2>
+      <p style="color:var(--text-dim);font-size:0.9rem;margin-bottom:36px;line-height:1.6;" class="reveal-item">
+        Cochiwawa no es solo una app de carpooling. Es una plataforma de movilidad inteligente que evoluciona contigo.
+      </p>
+
+      <div class="soon-grid">
+        <div class="soon-card reveal-item">
+          <div class="soon-icon">🧠</div>
+          <h4>IA de Match Personal</h4>
+          <p>Aprende tus horarios, rutas y preferencias. Te sugiere el viaje perfecto antes de que lo pidas.</p>
+          <div class="soon-tag">Q3 2026</div>
+        </div>
+        <div class="soon-card reveal-item" style="animation-delay:0.1s">
+          <div class="soon-icon">💳</div>
+          <h4>Wallet Digital</h4>
+          <p>Carga saldo, paga viajes y recibe dinero directo en la app. Cero efectivo.</p>
+          <div class="soon-tag">Q3 2026</div>
+        </div>
+        <div class="soon-card reveal-item" style="animation-delay:0.15s">
+          <div class="soon-icon">📊</div>
+          <h4>Gastos Transparentes</h4>
+          <p>Todos en el viaje ven en tiempo real: bencina, peajes, total por persona. Cero sorpresas.</p>
+          <div class="soon-tag">Q4 2026</div>
+        </div>
+        <div class="soon-card reveal-item" style="animation-delay:0.2s">
+          <div class="soon-icon">💰</div>
+          <h4>Tarjeta Prepago</h4>
+          <p>Tu tarjeta Cochiwawa física y virtual para bencina, peajes y gastos del viaje.</p>
+          <div class="soon-tag">Q4 2026</div>
+        </div>
+        <div class="soon-card reveal-item" style="animation-delay:0.25s">
+          <div class="soon-icon">🌍</div>
+          <h4>Rutas Ecológicas IA</h4>
+          <p>La IA calcula la ruta que minimiza emisiones de CO₂, no solo el tiempo. Viaja verde de verdad.</p>
+          <div class="soon-tag">Q1 2027</div>
+        </div>
+        <div class="soon-card reveal-item" style="animation-delay:0.3s">
+          <div class="soon-icon">🔮</div>
+          <h4>Predicción de Viajes</h4>
+          <p>IA predice cuándo necesitarás viaje según tu calendario y hábitos. Cupo listo antes de pedirlo.</p>
+          <div class="soon-tag">Q1 2027</div>
+        </div>
+        <div class="soon-card reveal-item" style="animation-delay:0.35s">
+          <div class="soon-icon">🛡️</div>
+          <h4>Score de Confianza IA</h4>
+          <p>Sistema de reputación inteligente que analiza comportamiento, puntualidad y evaluaciones para crear perfiles de confianza verificados.</p>
+          <div class="soon-tag">Q2 2027</div>
+        </div>
+        <div class="soon-card reveal-item" style="animation-delay:0.4s">
+          <div class="soon-icon">🚁</div>
+          <h4>Multimodalidad</h4>
+          <p>Combina tu viaje Cochiwawa con metro, bus o bicicleta. Un solo viaje, múltiples medios coordinados por IA.</p>
+          <div class="soon-tag">2027</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING / SUBSCRIPTIONS -->
+  <section id="pricing" style="padding:80px 24px;background:var(--deep);position:relative;overflow:hidden;">
+    <div style="position:absolute;inset:0;background:radial-gradient(ellipse 100% 60% at 50% 0%,rgba(82,183,136,0.06) 0%,transparent 60%);pointer-events:none;"></div>
+    <div style="position:absolute;inset:0;background:radial-gradient(ellipse 80% 40% at 50% 100%,rgba(255,107,53,0.04) 0%,transparent 60%);pointer-events:none;"></div>
+
+    <div style="max-width:420px;margin:0 auto;text-align:center;position:relative;">
+      <p class="section-label reveal-item">Planes y precios</p>
+      <h2 class="section-title reveal-item">Empieza gratis.<br><em>Desbloquea el commute.</em></h2>
+      <p style="color:var(--text-dim);font-size:0.9rem;line-height:1.6;margin-bottom:36px;" class="reveal-item">
+        Cochiwawa gana de dos formas — y solo dos: la <strong style="color:var(--white)">reserva de $999 CLP por viaje</strong> y las <strong style="color:var(--white)">suscripciones Commuter</strong>. Nunca tocamos el dinero entre conductor y pasajero.
+      </p>
+
+      <!-- HOW COCHIWAWA EARNS — transparency box -->
+      <div class="earn-box reveal-item">
+        <div class="earn-title">💚 ¿Cómo gana Cochiwawa?</div>
+        <div class="earn-row">
+          <span>🎟️</span>
+          <div><strong>$999 CLP por reserva</strong><small>Cada viaje, siempre. Pasajero lo paga al reservar su cupo.</small></div>
+        </div>
+        <div class="earn-row">
+          <span>🔁</span>
+          <div><strong>Suscripción Commuter</strong><small>Mensual. Desbloquea el modo commute para conductor y pasajero.</small></div>
+        </div>
+        <div class="earn-divider">Eso es todo. Sin comisiones. Sin corte del viaje. Nunca.</div>
+      </div>
+
+      <!-- PLAN CARDS -->
+      <div class="pricing-stack">
+
+        <!-- BÁSICO -->
+        <div class="price-card reveal-item">
+          <div class="price-card-top">
+            <div class="price-plan-name">🆓 Básico</div>
+            <div class="price-amount">
+              <span class="price-num">Gratis</span>
+            </div>
+            <div class="price-desc">Para viajes espontáneos. Sin compromiso.</div>
+          </div>
+          <ul class="price-features">
+            <li class="yes">✅ Reserva viajes por $999 CLP</li>
+            <li class="yes">✅ Verificación RUT + vehículo</li>
+            <li class="yes">✅ GPS en vivo + Botón SOS</li>
+            <li class="yes">✅ Chat grupal del viaje</li>
+            <li class="yes">✅ IA calcula precio por persona</li>
+            <li class="yes">✅ Sistema de ratings</li>
+            <li class="no">✗ Modo commute recurrente</li>
+            <li class="no">✗ Rutas semanales/quincenales</li>
+            <li class="no">✗ Precio compartido reducido</li>
+            <li class="no">✗ Prioridad en matching</li>
+          </ul>
+          <div class="price-cta-btn basic">Empezar gratis</div>
+        </div>
+
+        <!-- COMMUTER — HIGHLIGHTED -->
+        <div class="price-card featured reveal-item">
+          <div class="price-popular-badge">🔁 Modo Commuter</div>
+          <div class="price-card-top">
+            <div class="price-plan-name">🚗 Commuter</div>
+            <div class="price-amount">
+              <span class="price-num">$4.990</span>
+              <span class="price-per">CLP / mes</span>
+            </div>
+            <div class="price-desc">Para conductores y pasajeros que viajan al trabajo cada semana</div>
+          </div>
+
+          <!-- Commute duration picker -->
+          <div class="commute-picker">
+            <div class="cp-label">⏱️ El conductor elige la duración del commute:</div>
+            <div class="cp-options">
+              <div class="cp-opt">
+                <strong>1 semana</strong>
+                <small>Lun → Vie</small>
+              </div>
+              <div class="cp-opt">
+                <strong>2 semanas</strong>
+                <small>10 días hábiles</small>
+              </div>
+              <div class="cp-opt active">
+                <strong>1 mes</strong>
+                <small>~20 días hábiles</small>
+              </div>
+            </div>
+            <div class="cp-math">
+              <span>🤖 IA calcula costo total del período</span>
+              <span>÷</span>
+              <span>👥 Todos los pasajeros</span>
+              <span>=</span>
+              <span style="color:var(--lime);font-weight:700;">~75% más barato</span>
+            </div>
+          </div>
+	  <ul class="price-features">
+            <li class="yes">✅ Todo lo del plan Básico</li>
+            <li class="yes highlight-feat">✅ <strong>Modo commute recurrente desbloqueado</strong></li>
+            <li class="yes highlight-feat">✅ <strong>Duración: 1 sem / 2 sem / 1 mes</strong></li>
+            <li class="yes highlight-feat">✅ <strong>Precio dividido por IA entre todos</strong></li>
+            <li class="yes">✅ Paradas intermedias en ruta</li>
+            <li class="yes">✅ Reserva automática de cupo</li>
+            <li class="yes">✅ Prioridad en matching por zona</li>
+            <li class="yes">✅ Notificaciones de ruta en tiempo real</li>
+          </ul>
+
+          <!-- Key clarification -->
+          <div class="sub-clarity-box">
+            <span>💡</span>
+            <div>
+              <strong>¿Qué desbloquea la suscripción?</strong>
+              <p>El acceso al modo commute. El conductor y cada pasajero pagan su suscripción mensual para activar esta funcionalidad. El dinero del viaje lo arreglan entre ellos — Cochiwawa nunca lo toca.</p>
+            </div>
+          </div>
+
+          <div class="price-cta-btn commuter">Desbloquear Commuter</div>
+        </div>
+
+        <!-- PREMIUM -->
+        <div class="price-card reveal-item">
+          <div class="price-card-top">
+            <div class="price-plan-name">👑 Premium</div>
+            <div class="price-amount">
+              <span class="price-num">$9.990</span>
+              <span class="price-per">CLP / mes</span>
+            </div>
+            <div class="price-desc">Todo Commuter + acceso anticipado a lo que viene</div>
+          </div>
+          <ul class="price-features">
+            <li class="yes">✅ Todo lo del plan Commuter</li>
+            <li class="yes highlight-feat">✅ <strong>Acceso anticipado a Wallet Grupal IA</strong></li>
+            <li class="yes highlight-feat">✅ <strong>Analytics de ahorro y CO₂ mensual</strong></li>
+            <li class="yes highlight-feat">✅ <strong>Primero en probar nuevas funciones</strong></li>
+            <li class="yes">✅ Insignia Premium en perfil</li>
+            <li class="yes">✅ Soporte prioritario</li>
+            <li class="yes">✅ Rutas múltiples gestionadas</li>
+          </ul>
+          <div class="price-cta-btn premium">Quiero Premium</div>
+        </div>
+
+      </div>
+
+      <!-- COMING SOON — GROUP WALLET -->
+      <div class="group-wallet-card reveal-item">
+        <div class="gw-badge">🔮 Próximamente — La gran revolución</div>
+        <h3 class="gw-title">Wallet Grupal del Viaje</h3>
+        <p class="gw-desc">El futuro donde <strong style="color:var(--white)">cero dinero se intercambia en persona.</strong> Todo ocurre dentro de la app, con transparencia total.</p>
+
+        <div class="gw-flow">
+          <div class="gw-step">
+            <div class="gw-step-num">1</div>
+            <div>
+              <strong>Se crea el grupo de commute</strong>
+              <small>Conductor + pasajeros confirmados</small>
+            </div>
+          </div>
+          <div class="gw-arrow">↓</div>
+          <div class="gw-step">
+            <div class="gw-step-num">2</div>
+            <div>
+              <strong>Cada uno aporta su parte al Pot</strong>
+              <small>Dinero entra al fondo grupal compartido en app</small>
+            </div>
+          </div>
+          <div class="gw-arrow">↓</div>
+          <div class="gw-step">
+            <div class="gw-step-num">3</div>
+            <div>
+              <strong>El grupo ve el fondo en tiempo real</strong>
+              <small>Saldo visible para todos. Cero secretos.</small>
+            </div>
+          </div>
+          <div class="gw-arrow">↓</div>
+          <div class="gw-step gw-step-highlight">
+            <div class="gw-step-num">4</div>
+            <div>
+              <strong>Conductor paga bencina, peaje, etc.</strong>
+              <small>Se descuenta del pot automáticamente. Todos lo ven al instante.</small>
+            </div>
+          </div>
+          <div class="gw-arrow">↓</div>
+          <div class="gw-step gw-step-highlight">
+            <div class="gw-step-num">5</div>
+            <div>
+              <strong>Al terminar el período</strong>
+              <small>Saldo restante devuelto proporcionalmente. Historial completo descargable.</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="gw-pills">
+          <span class="gw-pill">💚 Sin efectivo</span>
+          <span class="gw-pill">👁️ Todos ven todo</span>
+          <span class="gw-pill">🤖 IA gestiona el fondo</span>
+          <span class="gw-pill">📊 Historial completo</span>
+          <span class="gw-pill">🔒 Sin sorpresas</span>
+        </div>
+      </div>
+
+      <!-- Bottom note -->
+      <div class="pricing-note reveal-item">
+        <p>💡 <strong style="color:var(--white);">Sin compromisos.</strong> Cancela cuando quieras. Cochiwawa cobra la suscripción y el booking de $999 — jamás un porcentaje del viaje.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- IMPACT STATS -->
+  <section id="impact" style="padding:60px 24px;background:linear-gradient(135deg,var(--forest) 0%,var(--sage) 100%);text-align:center;position:relative;overflow:hidden;">
+    <div style="position:absolute;top:-20px;right:-30px;font-size:12rem;opacity:0.06;pointer-events:none;">🌿</div>
+    <p class="section-label reveal-item">Nuestro impacto</p>
+    <h2 class="section-title reveal-item" style="font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(1.6rem,6vw,2.4rem);">
+      Cada viaje <em style="color:var(--lime);font-style:normal;">cuenta</em>
+    </h2>
+    <div class="stats-grid reveal-item">
+      <div class="stat-item">
+        <h2 class="count-up" data-target="2"><span>−</span>0kg</h2>
+        <p>CO₂ por viaje compartido</p>
+      </div>
+      <div class="stat-item">
+        <h2 class="count-up" data-target="60"><span>$</span>0%</h2>
+        <p>ahorro mensual en transporte</p>
+      </div>
+      <div class="stat-item">
+        <h2 class="count-up" data-target="3">0<span>×</span></h2>
+        <p>menos autos en las calles</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- INVESTOR + DONATION SECTION -->
+  <section id="investors" style="padding:80px 24px;background:var(--deep);position:relative;overflow:hidden;">
+    <div style="position:absolute;inset:0;background:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(255,215,0,0.04) 0%,transparent 60%);pointer-events:none;"></div>
+    <div style="max-width:420px;margin:0 auto;text-align:center;position:relative;">
+      <p class="section-label reveal-item">Únete al proyecto</p>
+      <h2 class="section-title reveal-item">Crecer juntos.<br><em>De verdad.</em></h2>
+      <p style="color:var(--text-dim);font-size:0.9rem;line-height:1.6;margin-bottom:36px;" class="reveal-item">
+        Cochiwawa está en etapa seed. Si crees en el carpooling chileno, hay dos formas de ser parte.
+      </p>
+
+      <!-- INVESTOR CARD -->
+      <div class="investor-card reveal-item" id="investor-card">
+        <div class="inv-badge">📊 Inversores</div>
+        <h3 class="inv-title">¿Eres inversor?</h3>
+        <p class="inv-desc">Estamos en etapa seed. Si crees en el carpooling chileno y quieres ser parte de la historia — hablemos.</p>
+
+        <form id="investor-form" class="inv-form" onsubmit="submitInvestor(event)">
+          <div class="inv-field">
+            <input type="text" id="inv-nombre" placeholder="Nombre completo *" required />
+          </div>
+          <div class="inv-field">
+            <input type="email" id="inv-email" placeholder="Email *" required />
+          </div>
+          <div class="inv-field">
+            <input type="text" id="inv-empresa" placeholder="Empresa / Fondo (opcional)" />
+          </div>
+          <div class="inv-field">
+            <select id="inv-tipo">
+              <option value="" disabled selected>Tipo de inversor</option>
+              <option value="Angel">Ángel</option>
+              <option value="VC">Venture Capital</option>
+              <option value="Strategic">Estratégico</option>
+              <option value="Other">Otro</option>
+            </select>
+          </div>
+          <div class="inv-field">
+            <input type="text" id="inv-rango" placeholder="Rango de inversión en mente (ej: $5M CLP)" />
+          </div>
+          <div class="inv-field">
+            <textarea id="inv-mensaje" placeholder="Tu mensaje *" rows="3" required></textarea>
+          </div>
+          <button type="submit" class="inv-btn" id="inv-submit-btn">Enviar interés</button>
+        </form>
+        <p id="inv-success" class="inv-success" style="display:none">✅ ¡Gracias! Te respondemos en 48 horas.</p>
+        <p class="inv-note">Solo contacto. Sin compromisos. Respondemos en 48 horas.</p>
+      </div>
+
+      <!-- DONATION CARD -->
+      <div class="donation-card reveal-item" id="donation-card" style="margin-top:20px;">
+        <div class="don-badge">💚 Apoya</div>
+        <h3 class="don-title">Apoya a Cochiwawa</h3>
+        <p class="don-desc">¿No eres inversor pero crees en el proyecto? Cada aporte nos ayuda a construir el carpooling que Chile merece.</p>
+
+        <div class="don-amounts">
+          <button class="don-amount-btn" onclick="selectAmount(2000, this)">$2.000</button>
+          <button class="don-amount-btn" onclick="selectAmount(5000, this)">$5.000</button>
+          <button class="don-amount-btn active" onclick="selectAmount(10000, this)">$10.000</button>
+          <button class="don-amount-btn" onclick="selectAmount(null, this)">Otro</button>
+        </div>
+        <div class="don-custom-wrap" id="don-custom-wrap" style="display:none">
+          <input type="number" id="don-custom-amount" placeholder="Monto en CLP" min="500" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(82,183,136,0.25);border-radius:12px;padding:12px 16px;color:var(--white);font-size:0.9rem;outline:none;" />
+        </div>
+        <div class="don-field" style="margin-top:12px;">
+          <input type="email" id="don-email" placeholder="Tu email (para confirmación)" />
+        </div>
+        <div class="don-field">
+          <input type="text" id="don-mensaje" placeholder="Mensaje de apoyo (opcional)" />
+        </div>
+        <button class="don-btn" onclick="submitDonation()">💚 Apoyar ahora</button>
+        <p id="don-success" class="don-success" style="display:none">✅ ¡Gracias por apoyar a Cochiwawa! 🐶💚</p>
+        <p class="don-note">Pago seguro vía Stripe. Va directo al desarrollo de Cochiwawa.</p>
+      </div>
+    </div>
+  </section>
+
+  <style>
+    /* ── INVESTOR CARD ── */
+    .investor-card {
+      background: linear-gradient(135deg, rgba(255,215,0,0.06), rgba(26,60,46,0.4));
+      border: 1px solid rgba(255,215,0,0.2);
+      border-radius: 24px;
+      padding: 28px 20px;
+      text-align: left;
+    }
+    .inv-badge {
+      display: inline-block;
+      background: rgba(255,215,0,0.12);
+      border: 1px solid rgba(255,215,0,0.25);
+      color: #ffd700;
+      padding: 4px 14px; border-radius: 50px;
+      font-size: 0.75rem; font-weight: 600; margin-bottom: 12px;
+    }
+    .inv-title {
+      font-family: 'Syne', sans-serif; font-weight: 800;
+      font-size: 1.3rem; color: var(--white); margin-bottom: 8px;
+    }
+    .inv-desc {
+      font-size: 0.85rem; color: var(--text-dim); line-height: 1.6; margin-bottom: 20px;
+    }
+    .inv-form { display: flex; flex-direction: column; gap: 10px; }
+    .inv-field input, .inv-field select, .inv-field textarea {
+      width: 100%;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,215,0,0.15);
+      border-radius: 12px;
+      padding: 12px 16px;
+      color: var(--white);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.88rem;
+      outline: none;
+      transition: border-color 0.3s;
+      box-sizing: border-box;
+    }
+    .inv-field input:focus, .inv-field select:focus, .inv-field textarea:focus {
+      border-color: rgba(255,215,0,0.45);
+    }
+    .inv-field select option { background: #1A3C2E; }
+    .inv-field textarea { resize: vertical; min-height: 72px; }
+    .inv-btn {
+      width: 100%; padding: 14px;
+      background: linear-gradient(135deg, rgba(255,215,0,0.85), rgba(255,180,0,0.7));
+      border: none; border-radius: 50px;
+      font-family: 'Syne', sans-serif; font-weight: 700;
+      font-size: 0.95rem; color: #1A3C2E;
+      cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+      margin-top: 4px;
+    }
+    .inv-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(255,215,0,0.3); }
+    .inv-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+    .inv-success { color: var(--mint); font-size: 0.88rem; font-weight: 500; padding: 10px 0; }
+    .inv-note { font-size: 0.74rem; color: var(--text-dim); margin-top: 12px; text-align: center; }
+
+    /* ── DONATION CARD ── */
+    .donation-card {
+      background: linear-gradient(135deg, rgba(82,183,136,0.08), rgba(26,60,46,0.3));
+      border: 1px solid rgba(82,183,136,0.25);
+      border-radius: 24px;
+      padding: 28px 20px;
+      text-align: left;
+    }
+    .don-badge {
+      display: inline-block;
+      background: rgba(82,183,136,0.15);
+      border: 1px solid rgba(82,183,136,0.3);
+      color: var(--mint);
+      padding: 4px 14px; border-radius: 50px;
+      font-size: 0.75rem; font-weight: 600; margin-bottom: 12px;
+    }
+    .don-title {
+      font-family: 'Syne', sans-serif; font-weight: 800;
+      font-size: 1.3rem; color: var(--white); margin-bottom: 8px;
+    }
+    .don-desc {
+      font-size: 0.85rem; color: var(--text-dim); line-height: 1.6; margin-bottom: 20px;
+    }
+    .don-amounts {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 14px;
+    }
+    .don-amount-btn {
+      padding: 10px 4px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(82,183,136,0.2);
+      border-radius: 12px;
+      color: var(--lime); font-family: 'Syne', sans-serif; font-weight: 700;
+      font-size: 0.78rem; cursor: pointer; transition: all 0.2s;
+    }
+    .don-amount-btn.active, .don-amount-btn:hover {
+      background: rgba(82,183,136,0.15);
+      border-color: rgba(82,183,136,0.5);
+      color: var(--white);
+    }
+    .don-field { margin-bottom: 10px; }
+    .don-field input {
+      width: 100%;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(82,183,136,0.2);
+      border-radius: 12px; padding: 12px 16px;
+      color: var(--white); font-family: 'DM Sans', sans-serif;
+      font-size: 0.88rem; outline: none; transition: border-color 0.3s;
+      box-sizing: border-box;
+    }
+    .don-field input:focus { border-color: rgba(82,183,136,0.5); }
+    .don-btn {
+      width: 100%; padding: 14px;
+      background: linear-gradient(135deg, var(--mint), var(--sage));
+      border: none; border-radius: 50px;
+      font-family: 'Syne', sans-serif; font-weight: 700;
+      font-size: 0.95rem; color: var(--deep);
+      cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+      margin-top: 4px;
+    }
+    .don-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(82,183,136,0.4); }
+    .don-success { color: var(--mint); font-size: 0.88rem; font-weight: 500; padding: 10px 0; }
+    .don-note { font-size: 0.74rem; color: var(--text-dim); margin-top: 12px; text-align: center; }
+    .don-custom-wrap { margin-bottom: 10px; }
+  </style>
+
+  <!-- CTA -->
+  <section id="cta" style="padding:80px 24px 60px;background:var(--deep);text-align:center;">
+    <div class="cta-box reveal-item">
+      <h2>¿Listo para viajar mejor?</h2>
+      <p>Únete a la lista de espera. Sé de los primeros en usar Cochiwawa cuando lancemos.</p>
+      <div class="platform-pills">
+        <span class="platform-pill android">🤖 Android · Google Play</span>
+        <span class="platform-pill ios">🍎 iOS · App Store <span class="platform-soon">Próximamente</span></span>
+      </div>
+      <div class="cta-email-form">
+        <input type="email" id="cta-email" placeholder="tu@correo.com" />
+        <button onclick="handleSignup('cta-email', 'cta-success')">🚗 Quiero unirme</button>
+        <p class="success-msg" id="cta-success">✅ ¡Perfecto! Eres parte de la comunidad Cochiwawa.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SOCIAL -->
+  <section id="social" style="padding:40px 24px 20px;background:var(--deep);text-align:center;">
+    <p class="social-label">Síguenos</p>
+    <div class="social-links reveal-item">
+      <a class="social-link" href="https://instagram.com/cochiwawa.cl" target="_blank">📸 Instagram</a>
+      <a class="social-link" href="https://tiktok.com/@cochiwawa" target="_blank">🎵 TikTok</a>
+      <a class="social-link" href="https://facebook.com/Cochiwawa" target="_blank">👥 Facebook</a>
+      <a class="social-link" href="https://youtube.com/@Cochiwawa" target="_blank">▶️ YouTube</a>
+      <a class="social-link" href="https://twitter.com/cochiwawa_cl" target="_blank">🐦 Twitter/X</a>
+      <a class="social-link" href="https://linkedin.com/company/cochiwawa" target="_blank">💼 LinkedIn</a>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>
+      <strong style="color:var(--mint);font-family:'Syne',sans-serif;">cochiwawa</strong><br>
+      Viaja juntos. Llega mejor.<br>
+      <a href="mailto:cochiwawa.app@gmail.com">cochiwawa.app@gmail.com</a><br><br>
+      © 2026 Cochiwawa · Chile 🇨🇱 · Hecho con 💚 y mucho mate
+    </p>
+  </footer>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, query, where, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+
+    const app = initializeApp({
+      apiKey: "AIzaSyABEfgTuThr5ELN2dwApgT2I7MG-cC4BVw",
+      authDomain: "cochiwawa2026.firebaseapp.com",
+      projectId: "cochiwawa2026",
+      storageBucket: "cochiwawa2026.firebasestorage.app",
+      messagingSenderId: "928505002206",
+      appId: "1:928505002206:web:cc89d9886c45b247756a4f"
+    });
+    const db = getFirestore(app);
+
+    // ── Email signup ──
+    window.handleSignup = async function(inputId, successId) {
+      const input = document.getElementById(inputId);
+      const success = document.getElementById(successId);
+      const btn = input.nextElementSibling?.tagName === 'BUTTON' ? input.nextElementSibling : null;
+      const email = input.value.trim().toLowerCase();
+      const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+      if (!re.test(email)) {
+        input.style.borderColor = 'rgba(255,107,53,0.6)';
+        input.placeholder = 'Ingresa un correo válido';
+        setTimeout(() => {
+          input.style.borderColor = '';
+          input.placeholder = inputId === 'hero-email' ? 'Tu correo electrónico' : 'tu@correo.com';
+        }, 2000);
+        return;
+      }
+
+      if (btn) { btn.disabled = true; btn.textContent = '⏳'; }
+
+      try {
+        const existing = await getDocs(query(collection(db, 'waitlist'), where('email', '==', email)));
+        if (existing.empty) {
+          await addDoc(collection(db, 'waitlist'), {
+            email,
+            source: 'landing',
+            createdAt: Date.now()
+          });
+        }
+        input.style.display = 'none';
+        if (btn) btn.style.display = 'none';
+        success.style.display = 'block';
+      } catch (err) {
+        console.error(err);
+        if (btn) { btn.disabled = false; btn.textContent = 'Únete →'; }
+        input.style.borderColor = 'rgba(255,107,53,0.6)';
+      }
+    };
+
+    // ── Investor form ──
+    let selectedAmount = 10000;
+
+    window.selectAmount = function(amount, btn) {
+      selectedAmount = amount;
+      document.querySelectorAll('.don-amount-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const customWrap = document.getElementById('don-custom-wrap');
+      customWrap.style.display = amount === null ? 'block' : 'none';
+      if (amount === null) selectedAmount = null;
+    };
+
+    window.submitInvestor = async function(e) {
+      e.preventDefault();
+      const btn = document.getElementById('inv-submit-btn');
+      const success = document.getElementById('inv-success');
+      btn.disabled = true; btn.textContent = '⏳ Enviando...';
+      const data = {
+        name: document.getElementById('inv-nombre').value.trim(),
+        email: document.getElementById('inv-email').value.trim().toLowerCase(),
+        company: document.getElementById('inv-empresa').value.trim() || null,
+        role: document.getElementById('inv-tipo').value || null,
+        range: document.getElementById('inv-rango').value.trim() || null,
+        message: document.getElementById('inv-mensaje').value.trim(),
+        status: 'NEW',
+        replied: false,
+        source: 'website',
+        timestamp: Date.now(),
+      };
+      try {
+        await addDoc(collection(db, 'investors'), data);
+        document.getElementById('investor-form').style.display = 'none';
+        success.style.display = 'block';
+      } catch(err) {
+        btn.disabled = false; btn.textContent = 'Enviar interés';
+        alert('Error al enviar. Intenta de nuevo.');
+      }
+    };
+
+    window.submitDonation = async function() {
+      const amt = selectedAmount || parseInt(document.getElementById('don-custom-amount')?.value);
+      const email = document.getElementById('don-email').value.trim().toLowerCase();
+      const mensaje = document.getElementById('don-mensaje').value.trim();
+      const btn = document.querySelector('.don-btn');
+      const success = document.getElementById('don-success');
+
+      if (!amt || amt < 500) {
+        alert('Por favor ingresa un monto válido (mínimo $500 CLP)');
+        return;
+      }
+      // Save intent to Firestore then redirect to Stripe (Stripe not wired yet)
+      btn.disabled = true; btn.textContent = '⏳';
+      try {
+        await addDoc(collection(db, 'donations'), {
+          email: email || null,
+          amount: amt,
+          currency: 'CLP',
+          message: mensaje || null,
+          status: 'PENDING',
+          source: 'website',
+          timestamp: Date.now(),
+        });
+        success.style.display = 'block';
+        success.textContent = '✅ ¡Gracias por tu apoyo! La integración con Stripe estará disponible muy pronto. 💚🐶';
+        btn.style.display = 'none';
+      } catch(err) {
+        btn.disabled = false; btn.textContent = '💚 Apoyar ahora';
+      }
+    };
+
+    // ── Scroll reveal with stagger ──
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach((e, i) => {
+        if (e.isIntersecting) {
+          const delay = parseFloat(e.target.style.animationDelay) || 0;
+          setTimeout(() => e.target.classList.add('visible'), delay * 1000);
+          revealObserver.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.12 });
+
+    document.querySelectorAll('.reveal-item').forEach(el => {
+      el.classList.add('reveal');
+      revealObserver.observe(el);
+    });
+
+    // ── Count-up animation on stats ──
+    const countObserver = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          const el = e.target;
+          const target = parseInt(el.dataset.target);
+          const prefix = el.querySelector('span:first-child')?.textContent || '';
+          const suffix = el.querySelector('span:last-child')?.textContent || '';
+          let current = 0;
+          const step = target / 40;
+          const timer = setInterval(() => {
+            current = Math.min(current + step, target);
+            const val = Math.round(current);
+            if (prefix === '−') el.innerHTML = `<span>−</span>${val}kg`;
+            else if (prefix === '$') el.innerHTML = `<span>$</span>${val}%`;
+            else el.innerHTML = `${val}<span>×</span>`;
+            if (current >= target) clearInterval(timer);
+          }, 40);
+          countObserver.unobserve(el);
+        }
+      });
+    }, { threshold: 0.5 });
+
+    document.querySelectorAll('.count-up').forEach(el => countObserver.observe(el));
+
+    // ── Preference card hover glow ──
+    document.querySelectorAll('.pref-big').forEach(card => {
+      card.addEventListener('mouseenter', () => card.style.transform = 'translateY(-4px) scale(1.02)');
+      card.addEventListener('mouseleave', () => card.style.transform = '');
+    });
+  </script>
+
+  <style>
+    .ai-cap-box {
+      margin-top: 14px;
+      background: rgba(82,183,136,0.06);
+      border: 1px solid rgba(82,183,136,0.22);
+      border-radius: 14px;
+      padding: 14px 13px;
+    }
+    .ai-cap-header {
+      display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+    }
+    .ai-cap-header span { font-size: 1.1rem; flex-shrink: 0; }
+    .ai-cap-header strong { color: var(--white); font-size: 0.83rem; line-height: 1.3; }
+    .ai-cap-box > p {
+      font-size: 0.8rem; color: var(--text-dim); line-height: 1.6; margin-bottom: 12px;
+    }
+    .ai-cap-pills { display: flex; flex-direction: column; gap: 5px; }
+    .cap-pill {
+      background: rgba(82,183,136,0.08);
+      border: 1px solid rgba(82,183,136,0.15);
+      color: var(--lime);
+      border-radius: 8px; padding: 6px 10px;
+      font-size: 0.74rem; font-weight: 500;
+    }
+
+    /* ── Verify grid ── */
+    .verify-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px;
+    }
+    .verify-item {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 12px; padding: 10px 10px;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .verify-item:hover { background: rgba(82,183,136,0.07); border-color: rgba(82,183,136,0.2); }
+    .verify-item > span { font-size: 1.3rem; flex-shrink: 0; }
+    .verify-item strong { display: block; color: var(--white); font-size: 0.78rem; }
+    .verify-item small  { color: var(--text-dim); font-size: 0.68rem; }
+
+    /* ── Vehicle grid ── */
+    .vehicle-label {
+      font-size: 0.8rem; color: var(--lime); font-weight: 600;
+      margin: 14px 0 8px; letter-spacing: 0.3px;
+    }
+    .vehicle-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+    }
+    .vehicle-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px; padding: 12px 6px;
+      text-align: center;
+      transition: background 0.2s, border-color 0.2s, transform 0.2s;
+      cursor: default;
+    }
+    .vehicle-card:hover {
+      background: rgba(82,183,136,0.1);
+      border-color: rgba(82,183,136,0.3);
+      transform: translateY(-3px);
+    }
+    .vehicle-card span { font-size: 1.6rem; display: block; margin-bottom: 4px; }
+    .vehicle-card small { font-size: 0.7rem; color: var(--text-dim); }
+
+    /* ── AI price box ── */
+    .ai-price-box {
+      background: linear-gradient(135deg, rgba(82,183,136,0.08), rgba(15,36,25,0.5));
+      border: 1px solid rgba(82,183,136,0.3);
+      border-radius: 18px; padding: 18px 16px; margin-top: 12px;
+      position: relative; overflow: hidden;
+    }
+    .ai-price-box::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--mint), transparent);
+    }
+    .ai-price-header { margin-bottom: 10px; }
+    .ai-chip {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: rgba(82,183,136,0.15);
+      border: 1px solid rgba(82,183,136,0.35);
+      color: var(--mint); padding: 4px 12px;
+      border-radius: 50px; font-size: 0.75rem; font-weight: 600;
+    }
+    .ai-price-box > p { font-size: 0.85rem; color: var(--text-dim); line-height: 1.6; margin-bottom: 14px; }
+    .ai-options { display: flex; flex-direction: column; gap: 8px; }
+    .ai-opt {
+      display: flex; align-items: center; gap: 10px;
+      border-radius: 12px; padding: 10px 12px;
+      border: 1px solid transparent;
+    }
+    .ai-opt.green  { background: rgba(82,183,136,0.08);  border-color: rgba(82,183,136,0.2); }
+    .ai-opt.amber  { background: rgba(255,200,80,0.07);  border-color: rgba(255,200,80,0.2); }
+    .ai-opt.coral  { background: rgba(255,107,53,0.07);  border-color: rgba(255,107,53,0.2); }
+    .ai-opt > span { font-size: 1.3rem; flex-shrink: 0; }
+    .ai-opt strong { display: block; color: var(--white); font-size: 0.82rem; }
+    .ai-opt small  { color: var(--text-dim); font-size: 0.72rem; }
+
+    /* ── Driver box ── */
+    .driver-box {
+      background: linear-gradient(135deg, rgba(82,183,136,0.08), rgba(26,60,46,0.3));
+      border: 1px solid rgba(82,183,136,0.25);
+      border-radius: 16px;
+      padding: 16px;
+      margin-top: 12px;
+    }
+    .driver-box-header {
+      display: flex; align-items: center; gap: 12px; margin-bottom: 10px;
+    }
+    .driver-avatar { font-size: 2rem; }
+    .driver-box-header strong { display: block; color: var(--white); font-size: 0.9rem; }
+    .driver-box-header small { color: var(--text-dim); font-size: 0.78rem; }
+    .driver-box > p { font-size: 0.85rem; color: var(--text-dim); line-height: 1.6; }
+
+    /* ── Meet & greet box ── */
+    .meet-box {
+      display: flex; gap: 12px; align-items: flex-start;
+      background: rgba(255,107,53,0.07);
+      border: 1px solid rgba(255,107,53,0.2);
+      border-radius: 14px; padding: 14px; margin: 12px 0;
+    }
+    .meet-icon { font-size: 1.6rem; flex-shrink: 0; }
+    .meet-box strong { display: block; color: var(--white); font-size: 0.88rem; margin-bottom: 4px; }
+    .meet-box p { font-size: 0.8rem; color: var(--text-dim); line-height: 1.5; margin: 0; }
+
+    /* ── Not Uber manifesto ── */
+    .manifesto-grid { display: flex; flex-direction: column; gap: 20px; }
+    .manifesto-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 20px; padding: 20px 16px;
+    }
+    .manifesto-vs { display: flex; align-items: flex-start; gap: 8px; }
+    .vs-col { flex: 1; text-align: center; }
+    .vs-col strong { display: block; font-family: 'Syne', sans-serif; font-size: 0.88rem; margin: 6px 0 10px; }
+    .vs-icon { font-size: 1.8rem; }
+    .vs-col ul { list-style: none; text-align: left; }
+    .vs-col ul li { font-size: 0.76rem; color: var(--text-dim); padding: 3px 0; }
+    .vs-col ul li::before { content: '• '; color: var(--text-dim); }
+    .vs-col.bad strong { color: var(--text-dim); }
+    .vs-col.bad ul li::before { content: '✗ '; color: rgba(255,100,100,0.5); }
+    .vs-col.good strong { color: var(--mint); }
+    .vs-col.good ul li { color: var(--lime); }
+    .vs-col.good ul li::before { content: '✓ '; color: var(--mint); }
+    .vs-divider {
+      font-family: 'Syne', sans-serif; font-weight: 800;
+      font-size: 0.75rem; color: var(--text-dim);
+      padding-top: 28px; flex-shrink: 0;
+    }
+    .reason-row {
+      display: flex; align-items: center; gap: 12px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px; padding: 12px 14px; margin-bottom: 8px;
+      font-size: 0.85rem; color: var(--lime);
+      transition: background 0.2s, border-color 0.2s, transform 0.2s;
+    }
+    .reason-row:hover {
+      background: rgba(82,183,136,0.08);
+      border-color: rgba(82,183,136,0.2);
+      transform: translateX(4px);
+    }
+    .reason-row span:first-child { font-size: 1.2rem; flex-shrink: 0; }
+
+    /* ── Pref mode tag ── */
+    .pref-mode-tag {
+      display: inline-block; margin-top: 8px;
+      background: rgba(255,182,193,0.12);
+      border: 1px solid rgba(255,182,193,0.25);
+      color: rgba(255,182,193,0.9);
+      padding: 2px 10px; border-radius: 20px;
+      font-size: 0.68rem; font-weight: 600; letter-spacing: 0.5px;
+    }
+
+    /* ── Step tags ── */
+    .step-tags {
+      display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px;
+    }
+    .stag {
+      background: rgba(82,183,136,0.1);
+      border: 1px solid rgba(82,183,136,0.2);
+      color: var(--lime);
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 0.72rem;
+      font-weight: 500;
+    }
+
+    /* ── Pref grid inside step ── */
+    .pref-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px;
+    }
+    .pref-card {
+      border-radius: 12px; padding: 10px 8px; text-align: center;
+      border: 1px solid rgba(255,255,255,0.08);
+      transition: transform 0.2s;
+    }
+    .pref-card:hover { transform: translateY(-2px); }
+    .pref-card span { font-size: 1.4rem; display: block; margin-bottom: 4px; }
+    .pref-card small { font-size: 0.72rem; color: var(--text-dim); }
+    .pref-card.female { background: rgba(255,182,193,0.08); border-color: rgba(255,182,193,0.2); }
+    .pref-card.male   { background: rgba(100,149,237,0.08); border-color: rgba(100,149,237,0.2); }
+    .pref-card.mixed  { background: rgba(82,183,136,0.08); border-color: rgba(82,183,136,0.2); }
+    .pref-card.lgbtq  { background: rgba(255,200,100,0.08); border-color: rgba(255,200,100,0.2); }
+
+    /* ── Pref showcase big ── */
+    .pref-showcase {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+    }
+    .pref-big {
+      border-radius: 18px; padding: 20px 14px; text-align: center;
+      border: 1px solid rgba(255,255,255,0.08);
+      transition: transform 0.3s, box-shadow 0.3s;
+      cursor: default;
+    }
+    .pref-big-icon { font-size: 2rem; margin-bottom: 8px; }
+    .pref-big h4 { font-family: 'Syne', sans-serif; font-size: 0.88rem; font-weight: 700; color: var(--white); margin-bottom: 6px; }
+    .pref-big p  { font-size: 0.75rem; color: var(--text-dim); line-height: 1.4; }
+    .female-big  { background: rgba(255,182,193,0.06); border-color: rgba(255,182,193,0.18); }
+    .female-big:hover { box-shadow: 0 8px 24px rgba(255,182,193,0.15); }
+    .male-big    { background: rgba(100,149,237,0.06); border-color: rgba(100,149,237,0.18); }
+    .male-big:hover { box-shadow: 0 8px 24px rgba(100,149,237,0.15); }
+    .mixed-big   { background: rgba(82,183,136,0.06); border-color: rgba(82,183,136,0.18); }
+    .mixed-big:hover { box-shadow: 0 8px 24px rgba(82,183,136,0.15); }
+    .lgbtq-big   { background: linear-gradient(135deg,rgba(255,100,100,0.05),rgba(255,200,80,0.05),rgba(100,200,100,0.05),rgba(100,150,255,0.05)); border-color: rgba(255,200,100,0.2); }
+    .lgbtq-big:hover { box-shadow: 0 8px 24px rgba(255,200,100,0.15); }
+
+    /* ── Coming soon ── */
+    .coming-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, rgba(255,107,53,0.2), rgba(255,107,53,0.05));
+      border: 1px solid rgba(255,107,53,0.3);
+      color: var(--coral);
+      padding: 6px 16px; border-radius: 50px;
+      font-size: 0.78rem; font-weight: 600;
+      letter-spacing: 0.5px; margin-bottom: 16px;
+    }
+    .soon-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+    }
+    .soon-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 18px; padding: 20px 14px; text-align: left;
+      transition: background 0.3s, border-color 0.3s, transform 0.3s;
+      position: relative; overflow: hidden;
+    }
+    .soon-card:hover {
+      background: rgba(82,183,136,0.06);
+      border-color: rgba(82,183,136,0.25);
+      transform: translateY(-3px);
+    }
+    .soon-icon { font-size: 1.8rem; margin-bottom: 10px; }
+    .soon-card h4 {
+      font-family: 'Syne', sans-serif; font-weight: 700;
+      font-size: 0.88rem; color: var(--white); margin-bottom: 6px;
+    }
+    .soon-card p { font-size: 0.75rem; color: var(--text-dim); line-height: 1.5; margin-bottom: 12px; }
+    .soon-tag {
+      display: inline-block;
+      background: rgba(255,107,53,0.12);
+      border: 1px solid rgba(255,107,53,0.25);
+      color: var(--coral); padding: 2px 8px;
+      border-radius: 20px; font-size: 0.68rem; font-weight: 600;
+    }
+
+    /* ══ PRICING NEW ELEMENTS ══ */
+
+    /* How Cochiwawa earns */
+    .earn-box {
+      background: rgba(82,183,136,0.06);
+      border: 1px solid rgba(82,183,136,0.22);
+      border-radius: 20px; padding: 20px 18px;
+      text-align: left; margin-bottom: 28px;
+    }
+    .earn-title {
+      font-family: 'Syne', sans-serif; font-weight: 700;
+      font-size: 0.88rem; color: var(--mint);
+      margin-bottom: 14px; text-align: center;
+    }
+    .earn-row {
+      display: flex; gap: 12px; align-items: flex-start;
+      padding: 10px 0; border-bottom: 1px solid rgba(82,183,136,0.1);
+    }
+    .earn-row:last-of-type { border-bottom: none; }
+    .earn-row > span { font-size: 1.2rem; flex-shrink: 0; }
+    .earn-row strong { display: block; color: var(--white); font-size: 0.85rem; margin-bottom: 2px; }
+    .earn-row small  { color: var(--text-dim); font-size: 0.75rem; }
+    .earn-divider {
+      margin-top: 14px; padding-top: 12px;
+      border-top: 1px solid rgba(82,183,136,0.15);
+      font-size: 0.78rem; color: var(--lime);
+      font-weight: 600; text-align: center; letter-spacing: 0.3px;
+    }
+
+    /* Commute duration picker */
+    .commute-picker {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px; padding: 14px;
+      margin-bottom: 18px;
+    }
+    .cp-label {
+      font-size: 0.75rem; color: var(--text-dim);
+      margin-bottom: 10px; font-weight: 500;
+    }
+    .cp-options {
+      display: flex; gap: 6px; margin-bottom: 12px;
+    }
+    .cp-opt {
+      flex: 1; text-align: center;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px; padding: 8px 4px;
+      transition: all 0.2s;
+    }
+    .cp-opt.active {
+      background: rgba(82,183,136,0.15);
+      border-color: rgba(82,183,136,0.4);
+    }
+    .cp-opt strong { display: block; color: var(--white); font-size: 0.78rem; }
+    .cp-opt small  { color: var(--text-dim); font-size: 0.65rem; }
+    .cp-math {
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 4px;
+      background: rgba(82,183,136,0.06);
+      border-radius: 10px; padding: 8px 10px;
+      font-size: 0.72rem; color: var(--text-dim);
+    }
+    .cp-math span { flex-shrink: 0; }
+
+    /* Subscription clarity box */
+    .sub-clarity-box {
+      display: flex; gap: 10px; align-items: flex-start;
+      background: rgba(255,200,80,0.06);
+      border: 1px solid rgba(255,200,80,0.18);
+      border-radius: 14px; padding: 14px; margin-bottom: 18px;
+    }
+    .sub-clarity-box > span { font-size: 1.1rem; flex-shrink: 0; }
+    .sub-clarity-box strong { display: block; color: var(--white); font-size: 0.82rem; margin-bottom: 4px; }
+    .sub-clarity-box p { font-size: 0.76rem; color: var(--text-dim); line-height: 1.5; margin: 0; }
+
+    /* Group Wallet Coming Soon Card */
+    .group-wallet-card {
+      background: linear-gradient(145deg, rgba(26,60,46,0.6), rgba(15,36,25,0.8));
+      border: 1px solid rgba(82,183,136,0.3);
+      border-radius: 24px; padding: 28px 20px;
+      margin-bottom: 20px; text-align: left;
+      position: relative; overflow: hidden;
+    }
+    .group-wallet-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--mint), var(--coral), var(--mint), transparent);
+      animation: shimmer 3s linear infinite;
+    }
+    @keyframes shimmer {
+      0%   { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    .gw-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, rgba(255,107,53,0.2), rgba(255,107,53,0.05));
+      border: 1px solid rgba(255,107,53,0.3);
+      color: var(--coral); padding: 5px 14px;
+      border-radius: 50px; font-size: 0.75rem;
+      font-weight: 600; margin-bottom: 14px;
+    }
+    .gw-title {
+      font-family: 'Syne', sans-serif; font-weight: 800;
+      font-size: 1.3rem; color: var(--white);
+      margin-bottom: 8px;
+    }
+    .gw-desc {
+      font-size: 0.85rem; color: var(--text-dim);
+      line-height: 1.6; margin-bottom: 24px;
+    }
+    .gw-flow { display: flex; flex-direction: column; gap: 0; margin-bottom: 20px; }
+    .gw-step {
+      display: flex; gap: 12px; align-items: flex-start;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .gw-step:last-child { border-bottom: none; }
+    .gw-step-highlight {
+      background: rgba(82,183,136,0.06);
+      border-radius: 12px; padding: 12px;
+      border: 1px solid rgba(82,183,136,0.15) !important;
+      margin: 4px -4px;
+    }
+    .gw-step-num {
+      width: 26px; height: 26px; border-radius: 50%;
+      background: rgba(82,183,136,0.15);
+      border: 1px solid rgba(82,183,136,0.3);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Syne', sans-serif; font-weight: 700;
+      font-size: 0.75rem; color: var(--mint);
+      flex-shrink: 0;
+    }
+    .gw-step strong { display: block; color: var(--white); font-size: 0.82rem; margin-bottom: 2px; }
+    .gw-step small  { color: var(--text-dim); font-size: 0.72rem; line-height: 1.4; }
+    .gw-arrow {
+      text-align: center; color: rgba(82,183,136,0.4);
+      font-size: 1rem; padding: 2px 0; padding-left: 13px;
+    }
+    .gw-pills {
+      display: flex; flex-wrap: wrap; gap: 6px;
+    }
+    .gw-pill {
+      background: rgba(82,183,136,0.08);
+      border: 1px solid rgba(82,183,136,0.2);
+      color: var(--lime); padding: 5px 12px;
+      border-radius: 20px; font-size: 0.74rem; font-weight: 500;
+    }
+
+    /* ══════════════════════════════
+       PRICING SECTION
+    ══════════════════════════════ */
+    .pricing-stack {
+      display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px;
+    }
+
+    .price-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 24px; padding: 24px 20px;
+      text-align: left; position: relative;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .price-card:hover { transform: translateY(-3px); }
+
+    .price-card.featured {
+      background: linear-gradient(145deg, rgba(82,183,136,0.1), rgba(26,60,46,0.4));
+      border: 1.5px solid rgba(82,183,136,0.4);
+      box-shadow: 0 0 40px rgba(82,183,136,0.12);
+    }
+    .price-card.featured:hover {
+      box-shadow: 0 8px 48px rgba(82,183,136,0.2);
+    }
+
+    .price-popular-badge {
+      position: absolute; top: -12px; left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, var(--mint), var(--sage));
+      color: var(--deep); padding: 4px 16px; border-radius: 20px;
+      font-family: 'Syne', sans-serif; font-weight: 700;
+      font-size: 0.72rem; white-space: nowrap;
+    }
+
+    .price-card-top { margin-bottom: 20px; }
+    .price-plan-name {
+      font-family: 'Syne', sans-serif; font-weight: 800;
+      font-size: 1.1rem; color: var(--white); margin-bottom: 8px;
+    }
+    .price-amount {
+      display: flex; align-items: baseline; gap: 5px; margin-bottom: 6px;
+    }
+    .price-num {
+      font-family: 'Syne', sans-serif; font-weight: 800;
+      font-size: clamp(1.8rem, 8vw, 2.4rem); color: var(--white);
+      line-height: 1;
+    }
+    .featured .price-num { color: var(--mint); }
+    .price-per { font-size: 0.8rem; color: var(--text-dim); }
+    .price-desc { font-size: 0.82rem; color: var(--text-dim); line-height: 1.4; }
+
+    .price-features {
+      list-style: none; display: flex; flex-direction: column;
+      gap: 7px; margin-bottom: 20px;
+    }
+    .price-features li {
+      font-size: 0.82rem; line-height: 1.4; padding: 2px 0;
+    }
+    .price-features li.yes { color: var(--lime); }
+    .price-features li.no  { color: rgba(139,175,152,0.4); }
+    .price-features li.highlight-feat { color: var(--white); }
+    .price-features li.highlight-feat strong { color: var(--lime); }
+
+    .soon-inline {
+      display: inline-block;
+      background: rgba(255,107,53,0.12);
+      border: 1px solid rgba(255,107,53,0.25);
+      color: var(--coral); padding: 1px 7px;
+      border-radius: 10px; font-size: 0.68rem; font-weight: 600;
+      margin-left: 4px;
+    }
+
+    /* In-app payment explainer */
+    .inapp-payment-box {
+      display: flex; gap: 10px; align-items: flex-start;
+      background: rgba(82,183,136,0.07);
+      border: 1px solid rgba(82,183,136,0.2);
+      border-radius: 14px; padding: 14px; margin-bottom: 18px;
+    }
+    .inapp-payment-box > span { font-size: 1.3rem; flex-shrink: 0; }
+    .inapp-payment-box strong { display: block; color: var(--white); font-size: 0.82rem; margin-bottom: 4px; }
+    .inapp-payment-box p { font-size: 0.75rem; color: var(--text-dim); line-height: 1.5; margin: 0; }
+
+    /* CTA buttons */
+    .price-cta-btn {
+      width: 100%; text-align: center; padding: 13px;
+      border-radius: 50px; font-family: 'Syne', sans-serif;
+      font-weight: 700; font-size: 0.9rem; cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .price-cta-btn.basic {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: var(--text-dim);
+    }
+    .price-cta-btn.commuter {
+      background: linear-gradient(135deg, var(--mint), var(--sage));
+      color: var(--deep);
+      box-shadow: 0 4px 20px rgba(82,183,136,0.3);
+    }
+    .price-cta-btn.commuter:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(82,183,136,0.45);
+    }
+    .price-cta-btn.premium {
+      background: linear-gradient(135deg, rgba(255,200,50,0.2), rgba(255,160,0,0.1));
+      border: 1px solid rgba(255,200,50,0.3);
+      color: #ffd700;
+    }
+    .price-cta-btn.premium:hover { transform: translateY(-2px); }
+
+    /* Bottom notes */
+    .pricing-note {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 16px; padding: 16px;
+      font-size: 0.82rem; color: var(--text-dim);
+      line-height: 1.6; margin-bottom: 14px; text-align: left;
+    }
+
+    .driver-sub-note {
+      background: rgba(82,183,136,0.05);
+      border: 1px dashed rgba(82,183,136,0.22);
+      border-radius: 16px; padding: 16px; text-align: left;
+    }
+    .dsn-header {
+      display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+    }
+    .dsn-header span { font-size: 1.2rem; }
+    .dsn-header strong { color: var(--white); font-size: 0.88rem; }
+    .driver-sub-note > p { font-size: 0.78rem; color: var(--text-dim); line-height: 1.6; margin: 0; }
+
+    /* ── Driver form preview ── */
+    .driver-form-preview {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 18px; padding: 16px 14px; margin: 14px 0;
+    }
+    .form-label {
+      font-size: 0.72rem; font-weight: 600; color: var(--mint);
+      letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px;
+    }
+    .form-row {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 9px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .form-row:last-child { border-bottom: none; }
+    .form-row.highlight {
+      background: rgba(82,183,136,0.06);
+      border-radius: 10px; padding: 10px; margin: 4px -4px;
+      border-bottom: none;
+    }
+    .form-icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+    .form-row strong { display: block; color: var(--white); font-size: 0.82rem; margin-bottom: 2px; }
+    .form-row small  { color: var(--text-dim); font-size: 0.72rem; line-height: 1.4; }
+    .form-badge {
+      display: inline-block; background: rgba(82,183,136,0.15);
+      border: 1px solid rgba(82,183,136,0.3); color: var(--mint);
+      padding: 1px 7px; border-radius: 20px; font-size: 0.65rem;
+      font-weight: 600; margin-left: 5px; vertical-align: middle;
+    }
+
+    /* ── Trip info card (what passenger sees) ── */
+    .trip-info-card {
+      background: linear-gradient(135deg, rgba(82,183,136,0.07), rgba(26,60,46,0.3));
+      border: 1px solid rgba(82,183,136,0.22);
+      border-radius: 18px; padding: 16px 14px; margin: 14px 0;
+    }
+    .trip-info-header { margin-bottom: 12px; }
+    .trip-info-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 7px 0;
+      border-bottom: 1px solid rgba(82,183,136,0.08);
+      font-size: 0.82rem; color: var(--lime);
+    }
+    .trip-info-row:last-child { border-bottom: none; }
+    .trip-info-row span:first-child { font-size: 1rem; flex-shrink: 0; }
+
+    /* ── Chat clarification note ── */
+    .chat-note {
+      display: flex; gap: 10px; align-items: flex-start;
+      background: rgba(255,200,80,0.06);
+      border: 1px solid rgba(255,200,80,0.18);
+      border-radius: 14px; padding: 14px; margin: 12px 0;
+    }
+    .chat-note > span { font-size: 1.2rem; flex-shrink: 0; }
+    .chat-note strong { display: block; color: var(--white); font-size: 0.85rem; margin-bottom: 5px; }
+    .chat-note p { font-size: 0.78rem; color: var(--text-dim); line-height: 1.5; margin: 0; }
+
+    /* ── Zone diagram ── */
+    .zone-diagram {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 18px; padding: 18px 14px; margin-bottom: 10px;
+    }
+    .zone-box {
+      flex: 1; text-align: center; padding: 10px 6px; border-radius: 12px;
+    }
+    .zone-box.origin      { background: rgba(82,183,136,0.08); border: 1px solid rgba(82,183,136,0.2); }
+    .zone-box.destination { background: rgba(255,107,53,0.07); border: 1px solid rgba(255,107,53,0.18); }
+    .zone-box > span  { font-size: 1.6rem; display: block; margin-bottom: 4px; }
+    .zone-box strong  { display: block; font-family: 'Syne', sans-serif; font-size: 0.82rem; color: var(--white); }
+    .zone-box small   { font-size: 0.68rem; color: var(--text-dim); }
+    .zone-arrow { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; }
+    .zone-line  { position: absolute; left: 0; right: 0; height: 2px; background: linear-gradient(90deg,var(--mint),var(--coral)); border-radius: 1px; }
+    .zone-car   { position: relative; z-index: 2; font-size: 1.2rem; animation: driveRight 2.5s linear infinite; }
+
+    /* ── Community photo card ── */
+    .photo-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 22px; padding: 22px 18px; text-align: left;
+    }
+    .photo-card-header {
+      display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
+    }
+    .photo-icon { font-size: 2rem; flex-shrink: 0; }
+    .photo-card-header strong { display: block; color: var(--white); font-size: 0.92rem; font-family: 'Syne', sans-serif; font-weight: 700; }
+    .photo-card-header small  { color: var(--text-dim); font-size: 0.78rem; }
+    .photo-reasons { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+    .photo-reason {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 0.82rem; color: var(--lime);
+      background: rgba(82,183,136,0.06);
+      border-radius: 10px; padding: 9px 12px;
+    }
+    .photo-reason span:first-child { font-size: 1.1rem; flex-shrink: 0; }
+    .photo-social {
+      display: flex; flex-wrap: wrap; gap: 6px;
+    }
+    .social-tag {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: var(--text-dim); padding: 4px 10px;
+      border-radius: 20px; font-size: 0.72rem;
+    }
+
+    /* ── Rating box ── */
+    .rating-box {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 22px; padding: 22px 18px; text-align: left;
+    }
+    .rating-row { display: flex; gap: 14px; margin-bottom: 16px; }
+    .rating-badge {
+      flex-shrink: 0; width: 100px;
+      background: linear-gradient(135deg, rgba(255,200,50,0.12), rgba(255,160,0,0.06));
+      border: 1px solid rgba(255,200,50,0.25);
+      border-radius: 14px; padding: 12px 8px; text-align: center;
+    }
+    .rating-badge.gold span  { font-size: 0.7rem; display: block; margin-bottom: 6px; }
+    .rating-badge.gold strong { display: block; font-family: 'Syne', sans-serif; font-size: 0.78rem; color: #ffd700; margin-bottom: 4px; }
+    .rating-badge.gold small  { font-size: 0.65rem; color: var(--text-dim); }
+    .rating-perks { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+    .rating-perk { font-size: 0.76rem; color: var(--lime); }
+    .rating-note {
+      display: flex; gap: 10px; align-items: flex-start;
+      background: rgba(82,183,136,0.06);
+      border: 1px solid rgba(82,183,136,0.15);
+      border-radius: 12px; padding: 12px;
+    }
+    .rating-note span { font-size: 1rem; flex-shrink: 0; }
+    .rating-note p { font-size: 0.78rem; color: var(--text-dim); line-height: 1.5; margin: 0; }
+
+    /* ── Platform pills ── */
+    .platform-pills {
+      display: flex; flex-direction: column; gap: 8px;
+      margin-bottom: 20px;
+    }
+    .platform-pill {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      border-radius: 50px; padding: 10px 18px; font-size: 0.85rem; font-weight: 500;
+    }
+    .platform-pill.android {
+      background: rgba(82,183,136,0.12); border: 1px solid rgba(82,183,136,0.3); color: var(--lime);
+    }
+    .platform-pill.ios {
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12); color: var(--text-dim);
+    }
+    .platform-soon {
+      background: rgba(255,107,53,0.15); border: 1px solid rgba(255,107,53,0.3);
+      color: var(--coral); padding: 2px 8px; border-radius: 20px; font-size: 0.68rem; font-weight: 600;
+    }
+
+    /* ── COMMUTER SECTION ── */
+    .commuter-hero-card {
+      background: linear-gradient(135deg, rgba(82,183,136,0.08), rgba(26,60,46,0.4));
+      border: 1px solid rgba(82,183,136,0.25);
+      border-radius: 22px; padding: 22px 18px; margin-bottom: 20px;
+      position: relative; overflow: hidden;
+    }
+    .commuter-hero-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--mint), transparent);
+    }
+    .commuter-route {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 18px;
+    }
+    .commuter-node {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 0.85rem; color: var(--white); font-weight: 500;
+    }
+    .cnode-dot {
+      width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+    }
+    .cnode-dot.home { background: var(--mint); box-shadow: 0 0 8px rgba(82,183,136,0.6); }
+    .cnode-dot.work { background: var(--coral); box-shadow: 0 0 8px rgba(255,107,53,0.6); }
+    .commuter-line {
+      flex: 1; position: relative; height: 2px;
+      background: linear-gradient(90deg, var(--mint), var(--coral));
+      border-radius: 1px;
+    }
+    .commuter-car-anim {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      font-size: 1rem; animation: driveRight 3s linear infinite;
+    }
+    @keyframes driveRight {
+      0%   { left: 0%;   opacity: 0; }
+      10%  { opacity: 1; }
+      90%  { opacity: 1; }
+      100% { left: 85%;  opacity: 0; }
+    }
+    .commuter-math {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 4px; flex-wrap: wrap;
+    }
+    .cmath-item { text-align: center; flex: 1; min-width: 60px; }
+    .cmath-item strong { display: block; color: var(--white); font-size: 0.82rem; font-family: 'Syne', sans-serif; }
+    .cmath-item small  { color: var(--text-dim); font-size: 0.68rem; }
+    .cmath-divide, .cmath-equals {
+      font-family: 'Syne', sans-serif; font-weight: 800;
+      font-size: 1.2rem; color: var(--mint); flex-shrink: 0;
+    }
+    .cmath-result strong { display: block; font-family: 'Syne', sans-serif; font-size: 1.1rem; }
+    .cmath-result small  { color: var(--text-dim); font-size: 0.68rem; }
+
+    .commuter-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;
+    }
+    .commuter-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 16px; padding: 16px 12px;
+      transition: background 0.3s, border-color 0.3s, transform 0.3s;
+    }
+    .commuter-card:hover {
+      background: rgba(82,183,136,0.07);
+      border-color: rgba(82,183,136,0.25);
+      transform: translateY(-3px);
+    }
+    .commuter-card > span { font-size: 1.6rem; display: block; margin-bottom: 8px; }
+    .commuter-card h4 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.85rem; color: var(--white); margin-bottom: 5px; }
+    .commuter-card p  { font-size: 0.75rem; color: var(--text-dim); line-height: 1.5; }
+
+    .commuter-scenario {
+      background: rgba(255,107,53,0.06);
+      border: 1px solid rgba(255,107,53,0.18);
+      border-radius: 16px; padding: 18px 16px; margin-bottom: 16px;
+    }
+    .scenario-label {
+      font-size: 0.72rem; font-weight: 600; color: var(--coral);
+      letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px;
+    }
+    .commuter-scenario p { font-size: 0.83rem; color: var(--text-dim); line-height: 1.7; }
+
+    .commuter-soon {
+      background: rgba(82,183,136,0.05);
+      border: 1px dashed rgba(82,183,136,0.25);
+      border-radius: 16px; padding: 16px;
+      text-align: center;
+    }
+
+    /* ── Reveal base ── */
+    .reveal {
+      opacity: 0; transform: translateY(28px);
+      transition: opacity 0.65s ease, transform 0.65s ease;
+    }
+    .reveal.visible { opacity: 1; transform: none; }
+  </style>
+</body>
+</html>
