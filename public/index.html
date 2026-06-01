@@ -1706,7 +1706,7 @@
         </div>
         <button class="don-btn" onclick="submitDonation()">💚 Apoyar ahora</button>
         <p id="don-success" class="don-success" style="display:none">✅ ¡Gracias por apoyar a Cochiwawa! 🐶💚</p>
-        <p class="don-note">Pago seguro vía Stripe. Va directo al desarrollo de Cochiwawa.</p>
+        <p class="don-note">Pago seguro vía Khipu 🇨🇱 · Va directo al desarrollo de Cochiwawa.</p>
       </div>
     </div>
   </section>
@@ -1972,27 +1972,37 @@
       const btn = document.querySelector('.don-btn');
       const success = document.getElementById('don-success');
 
-      if (!amt || amt < 500) {
-        alert('Por favor ingresa un monto válido (mínimo $500 CLP)');
+      if (!amt || amt < 1000) {
+        alert('Por favor ingresa un monto válido (mínimo $1.000 CLP)');
         return;
       }
-      // Save intent to Firestore then redirect to Stripe (Stripe not wired yet)
-      btn.disabled = true; btn.textContent = '⏳';
+
+      btn.disabled = true; btn.textContent = '⏳ Preparando pago…';
       try {
-        await addDoc(collection(db, 'donations'), {
-          email: email || null,
-          amount: amt,
-          currency: 'CLP',
-          message: mensaje || null,
-          status: 'PENDING',
-          source: 'website',
-          timestamp: Date.now(),
-        });
-        success.style.display = 'block';
-        success.textContent = '✅ ¡Gracias por tu apoyo! La integración con Stripe estará disponible muy pronto. 💚🐶';
-        btn.style.display = 'none';
+        const response = await fetch(
+          'https://us-central1-cochiwawa2026.cloudfunctions.net/createKhipuDonation',
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              amount: amt,
+              donorEmail: email || null,
+              donorName: null,
+            }),
+          }
+        );
+
+        if (!response.ok) throw new Error('Error del servidor');
+        const data = await response.json();
+
+        // Redirect to Khipu payment page
+        window.location.href = data.paymentUrl;
       } catch(err) {
-        btn.disabled = false; btn.textContent = '💚 Apoyar ahora';
+        btn.disabled = false;
+        btn.textContent = '💚 Apoyar ahora';
+        success.style.display = 'block';
+        success.style.color = '#ff6b6b';
+        success.textContent = '❌ Error al iniciar el pago. Intenta de nuevo.';
       }
     };
 
